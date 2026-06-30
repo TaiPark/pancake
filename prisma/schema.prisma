@@ -1,0 +1,88 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum GroupRole {
+  OWNER
+  MEMBER
+}
+
+enum SessionStage {
+  SPARK
+  PLAN
+  FEEDBACK
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String
+  email         String    @unique
+  passwordHash  String
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  groupsOwned   Group[]   @relation("GroupOwner")
+  memberships   GroupMember[]
+  updatedSessions Session[] @relation("UpdatedSessions")
+  uploadedPhotos Photo[] @relation("UploadedPhotos")
+}
+
+model Group {
+  id         String   @id @default(cuid())
+  name       String
+  slug       String   @unique
+  inviteCode String   @unique
+  ownerId    String
+  owner      User     @relation("GroupOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  members    GroupMember[]
+  sessions   Session[]
+}
+
+model GroupMember {
+  userId    String
+  groupId   String
+  role      GroupRole @default(MEMBER)
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  group     Group     @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@id([userId, groupId])
+}
+
+model Session {
+  id           String       @id @default(cuid())
+  groupId      String
+  group        Group        @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  title        String
+  stage        SessionStage @default(SPARK)
+  sparkFields  Json
+  planMarkdown String       @default("")
+  updatedById  String?
+  updatedBy    User?        @relation("UpdatedSessions", fields: [updatedById], references: [id], onDelete: SetNull)
+  photos       Photo[]
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  @@index([groupId, stage])
+}
+
+model Photo {
+  id           String   @id @default(cuid())
+  sessionId    String
+  session      Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  objectKey    String   @unique
+  width        Int
+  height       Int
+  caption      String   @default("")
+  uploadedById String
+  uploadedBy   User     @relation("UploadedPhotos", fields: [uploadedById], references: [id], onDelete: Cascade)
+  createdAt    DateTime @default(now())
+
+  @@index([sessionId])
+}
