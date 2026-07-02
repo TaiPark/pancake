@@ -16,7 +16,12 @@ ENV NODE_ENV=production
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
-RUN test -d .next/static/css && find .next/static/css -type f -name "*.css" | grep -q .
+RUN if ! test -d .next/static/css || ! find .next/static/css -type f -name "*.css" | grep -q .; then \
+      echo "ERROR: CSS assets were not copied into the runner image."; \
+      echo "Contents of .next/static:"; \
+      find .next/static -maxdepth 4 -type f | sort | sed -n '1,160p'; \
+      exit 1; \
+    fi
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/lib ./lib
 COPY --from=builder /app/node_modules ./node_modules
