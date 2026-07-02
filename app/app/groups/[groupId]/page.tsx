@@ -1,11 +1,16 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { createSessionAction } from "@/app/actions";
+import { AppShell } from "@/components/AppShell";
 import { KanbanBoard } from "@/components/KanbanBoard";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 export default async function GroupBoardPage({ params }: { params: Promise<{ groupId: string }> }) {
   const session = await auth();
+  if (!session?.user?.id) {
+    redirect("/login");
+  }
+
   const { groupId } = await params;
   const group = await prisma.group.findFirst({
     where: {
@@ -34,7 +39,8 @@ export default async function GroupBoardPage({ params }: { params: Promise<{ gro
   }
 
   return (
-    <div className="grid gap-8">
+    <AppShell email={session.user.email}>
+      <div className="grid gap-8">
       <section className="reveal grid gap-5 xl:grid-cols-[1fr_25rem] xl:items-end">
         <div>
           <p className="font-mono text-xs uppercase tracking-[0.18em] text-[var(--accent-strong)]">Group Board</p>
@@ -57,6 +63,7 @@ export default async function GroupBoardPage({ params }: { params: Promise<{ gro
       </section>
 
       <KanbanBoard groupId={group.id} sessions={group.sessions} />
-    </div>
+      </div>
+    </AppShell>
   );
 }

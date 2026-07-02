@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { updatePlanAction, updateSparkAction } from "@/app/actions";
+import { AppShell } from "@/components/AppShell";
 import { PhotoMasonry } from "@/components/PhotoMasonry";
 import { PhotoUploader } from "@/components/PhotoUploader";
 import { StageControls } from "@/components/StageControls";
@@ -16,6 +17,10 @@ export default async function SessionPage({
   params: Promise<{ groupId: string; sessionId: string }>;
 }) {
   const authSession = await auth();
+  if (!authSession?.user?.id) {
+    redirect("/login");
+  }
+
   const { groupId, sessionId } = await params;
   const session = await prisma.session.findFirst({
     where: {
@@ -42,7 +47,8 @@ export default async function SessionPage({
   const renderedPlan = await renderMarkdown(session.planMarkdown || "### 还没有摄影策划\n\n在左侧写下拍摄目标、分镜、灯光、服装和现场执行。");
 
   return (
-    <div className="grid gap-6">
+    <AppShell email={authSession.user.email}>
+      <div className="grid gap-6">
       <section className="reveal grid gap-4">
         <Link className="text-sm text-[var(--muted)] hover:text-[var(--text)]" href={`/app/groups/${groupId}`}>
           返回 {session.group.name}
@@ -122,6 +128,7 @@ export default async function SessionPage({
           }))}
         />
       </section>
-    </div>
+      </div>
+    </AppShell>
   );
 }

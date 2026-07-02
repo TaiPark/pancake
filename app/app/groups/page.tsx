@@ -1,10 +1,16 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { createGroupAction, joinGroupAction } from "@/app/actions";
+import { AppShell } from "@/components/AppShell";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 export default async function GroupsPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
   const session = await auth();
+  if (!session?.user?.id) {
+    redirect("/login");
+  }
+
   const params = await searchParams;
   const groups = await prisma.group.findMany({
     where: {
@@ -19,7 +25,8 @@ export default async function GroupsPage({ searchParams }: { searchParams: Promi
   });
 
   return (
-    <div className="grid gap-8">
+    <AppShell email={session.user.email}>
+      <div className="grid gap-8">
       <section className="reveal grid gap-5 md:grid-cols-[1.2fr_0.8fr] md:items-end">
         <div>
           <h1 className="max-w-[12ch] text-5xl font-semibold leading-[0.98] tracking-tight md:text-7xl">
@@ -75,6 +82,7 @@ export default async function GroupsPage({ searchParams }: { searchParams: Promi
           </Link>
         ))}
       </section>
-    </div>
+      </div>
+    </AppShell>
   );
 }
