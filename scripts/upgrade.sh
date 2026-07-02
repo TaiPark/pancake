@@ -53,6 +53,22 @@ echo "==> Verify auth page status"
 STATUS="$(curl -s -o /dev/null -w '%{http_code} %{redirect_url}' http://127.0.0.1:3000/login)"
 echo "local /login: $STATUS"
 
+echo "==> Verify static assets"
+CSS_PATH="$(curl -fsS http://127.0.0.1:3000/login | grep -o '/_next/static/css/[^" ]*\.css' | head -1 || true)"
+if [[ -z "$CSS_PATH" ]]; then
+  echo "ERROR: no CSS asset was referenced by /login"
+  $SUDO $COMPOSE logs app --tail=120
+  exit 1
+fi
+
+CSS_STATUS="$(curl -s -o /dev/null -w '%{http_code}' "http://127.0.0.1:3000${CSS_PATH}" || true)"
+echo "local CSS ${CSS_PATH}: ${CSS_STATUS:-no response}"
+if [[ "$CSS_STATUS" != "200" ]]; then
+  echo "ERROR: CSS asset did not return 200"
+  $SUDO $COMPOSE exec app sh -lc 'pwd; ls -lah .next; find .next/static -maxdepth 3 -type f | head -40' || true
+  exit 1
+fi
+
 echo "==> Running containers"
 $SUDO $COMPOSE ps
 
