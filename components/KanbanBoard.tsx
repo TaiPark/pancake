@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { ArrowRight, Camera, NotePencil } from "@phosphor-icons/react/dist/ssr";
+import { ArrowRight, Camera, NotePencil, Trash } from "@phosphor-icons/react/dist/ssr";
 import { SessionStage, type Session } from "@prisma/client";
-import { updateSessionStageAction } from "@/app/actions";
+import { deleteSessionAction, updateSessionStageAction } from "@/app/actions";
 import { canMoveSessionStage, stageHint, stageLabel } from "@/lib/domain";
 import { StageBadge } from "@/components/StageBadge";
 
@@ -60,17 +60,23 @@ export function KanbanBoard({ groupId, sessions }: { groupId: string; sessions: 
                     </p>
                   </Link>
 
-                  <div className="mt-4 flex gap-2">
+                  <div className="mt-4 flex flex-wrap gap-2">
                     {stages
                       .filter((target) => target !== session.stage && canMoveSessionStage(session.stage, target))
                       .map((target) => (
-                        <form className="flex-1" action={updateSessionStageAction.bind(null, session.id, target)} key={target}>
+                        <form className="min-w-0 flex-1" action={updateSessionStageAction.bind(null, session.id, target)} key={target}>
                           <button className="button button-secondary min-h-9 w-full px-2 text-xs" type="submit">
                             {stageLabel(target)}
                             <ArrowRight size={14} />
                           </button>
                         </form>
                       ))}
+                    <form action={deleteSessionAction.bind(null, session.id)}>
+                      <button className="button button-danger min-h-9 px-2 text-xs" type="submit" aria-label={`删除 ${session.title}`}>
+                        <Trash size={14} />
+                        删除
+                      </button>
+                    </form>
                   </div>
                 </article>
               ))}

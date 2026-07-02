@@ -3,6 +3,7 @@ import { SessionStage } from "@prisma/client";
 import {
   canMoveSessionStage,
   defaultSparkFields,
+  mergeSparkFields,
   parseSparkFields,
   stageHint,
   stageLabel,
@@ -49,5 +50,29 @@ describe("session workflow domain rules", () => {
     expect(workflowSections.flatMap((section) => section.fields.map((field) => field.name))).toEqual(
       Object.keys(defaultSparkFields)
     );
+  });
+
+  test("merges partial workflow form updates without clearing hidden stages", () => {
+    const formData = new FormData();
+    formData.set("theme", "新主题");
+    formData.set("mood", "");
+
+    expect(
+      mergeSparkFields(
+        {
+          ...defaultSparkFields,
+          theme: "旧主题",
+          mood: "旧情绪",
+          onsiteChecklist: "现场检查保留",
+          retrospective: "复盘保留"
+        },
+        formData
+      )
+    ).toMatchObject({
+      theme: "新主题",
+      mood: "",
+      onsiteChecklist: "现场检查保留",
+      retrospective: "复盘保留"
+    });
   });
 });

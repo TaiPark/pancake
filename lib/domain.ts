@@ -119,6 +119,17 @@ export function parseSparkFields(value: unknown): SparkFields {
   ) as SparkFields;
 }
 
+export function mergeSparkFields(current: SparkFields, formData: FormData): SparkFields {
+  return Object.fromEntries(
+    Object.keys(defaultSparkFields).map((key) => {
+      if (formData.has(key)) {
+        return [key, String(formData.get(key) ?? "")];
+      }
+      return [key, current[key as keyof SparkFields]];
+    })
+  ) as SparkFields;
+}
+
 export function canMoveSessionStage(from: SessionStage, to: SessionStage): boolean {
   if (from === to) return true;
 

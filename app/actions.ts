@@ -7,7 +7,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { auth, signIn, signOut } from "@/lib/auth";
-import { canMoveSessionStage, defaultPlanMarkdown, defaultSparkFields } from "@/lib/domain";
+import { canMoveSessionStage, defaultPlanMarkdown, defaultSparkFields, mergeSparkFields, parseSparkFields } from "@/lib/domain";
 import { validateRegistrationInvite } from "@/lib/invite";
 import { prisma } from "@/lib/prisma";
 import { requireGroupMember } from "@/lib/permissions";
@@ -160,6 +160,22 @@ export async function createSessionAction(groupId: string, formData: FormData) {
   redirect(`/app/groups/${groupId}/sessions/${session.id}`);
 }
 
+export async function deleteSessionAction(sessionId: string) {
+  const userId = await currentUserId();
+  const session = await prisma.session.findUniqueOrThrow({
+    where: { id: sessionId },
+    select: { groupId: true }
+  });
+
+  await requireGroupMember(userId, session.groupId);
+
+  await prisma.session.delete({
+    where: { id: sessionId }
+  });
+
+  revalidatePath(`/app/groups/${session.groupId}`);
+}
+
 export async function updateSessionStageAction(sessionId: string, targetStage: SessionStage) {
   const userId = await currentUserId();
   const session = await prisma.session.findUniqueOrThrow({
@@ -189,17 +205,16 @@ export async function updateSparkAction(sessionId: string, formData: FormData) {
   const userId = await currentUserId();
   const session = await prisma.session.findUniqueOrThrow({
     where: { id: sessionId },
-    select: { groupId: true }
+    select: { groupId: true, sparkFields: true }
   });
 
   await requireGroupMember(userId, session.groupId);
+  const nextSparkFields = mergeSparkFields(parseSparkFields(session.sparkFields), formData);
 
   await prisma.session.update({
     where: { id: sessionId },
     data: {
-      sparkFields: Object.fromEntries(
-        Object.keys(defaultSparkFields).map((key) => [key, String(formData.get(key) ?? "")])
-      ),
+      sparkFields: nextSparkFields,
       updatedById: userId
     }
   });

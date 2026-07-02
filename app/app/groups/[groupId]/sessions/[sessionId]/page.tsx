@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import { ArrowLeft } from "@phosphor-icons/react/dist/ssr";
 import { updatePlanAction, updateSparkAction } from "@/app/actions";
 import { AppShell } from "@/components/AppShell";
 import { PhotoMasonry } from "@/components/PhotoMasonry";
 import { PhotoUploader } from "@/components/PhotoUploader";
-import { StageControls } from "@/components/StageControls";
+import { WorkflowEditor } from "@/components/WorkflowEditor";
 import { auth } from "@/lib/auth";
 import { defaultPlanMarkdown, parseSparkFields, stageLabel, workflowSections } from "@/lib/domain";
 import { renderMarkdown } from "@/lib/markdown";
@@ -59,10 +60,11 @@ export default async function SessionPage({
     <AppShell displayName={currentUser?.name ?? authSession.user.name ?? "成员"}>
       <div className="grid gap-6">
       <section className="reveal grid gap-4">
-        <Link className="text-sm text-[var(--muted)] hover:text-[var(--text)]" href={`/app/groups/${groupId}`}>
+        <Link className="button button-secondary w-fit min-h-10 px-3 text-sm" href={`/app/groups/${groupId}`}>
+          <ArrowLeft size={16} weight="bold" />
           返回 {session.group.name}
         </Link>
-        <div className="grid gap-4 xl:grid-cols-[1fr_28rem] xl:items-end">
+        <div className="grid gap-4">
           <div>
             <h1 className="max-w-[14ch] text-5xl font-semibold leading-[0.98] tracking-tight md:text-7xl">
               {session.title}
@@ -73,68 +75,16 @@ export default async function SessionPage({
               <span>最后更新：{session.updatedBy?.name ?? "未知成员"}，{session.updatedAt.toLocaleString("zh-CN")}</span>
             </div>
           </div>
-          <StageControls sessionId={session.id} stage={session.stage} />
         </div>
       </section>
 
-      <section className="workflow-rail grid gap-3 md:grid-cols-3">
-        {workflowSections.map((section, index) => {
-          const filled = section.fields.filter((field) => spark[field.name].trim().length > 0).length;
-          return (
-            <article
-              className={`workflow-card panel reveal p-4 ${section.stage === session.stage ? "workflow-card-active" : ""}`}
-              key={section.stage}
-              style={{ animationDelay: `${index * 70}ms` }}
-            >
-              <div className="flex items-center justify-between gap-3">
-                <span className="font-mono text-xs text-[var(--accent-strong)]">0{index + 1}</span>
-                <span className="rounded-full border border-white/10 px-2 py-1 text-xs text-[var(--muted)]">
-                  {filled}/{section.fields.length}
-                </span>
-              </div>
-              <h2 className="mt-5 text-2xl font-semibold tracking-tight">{section.title}</h2>
-              <p className="mt-3 text-sm leading-6 text-[var(--muted)]">{section.summary}</p>
-            </article>
-          );
-        })}
-      </section>
-
       <section className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
-        <form action={updateSparkAction.bind(null, session.id)} className="grid gap-4">
-          {workflowSections.map((section, index) => (
-            <section
-              className={`panel reveal grid gap-4 p-5 ${section.stage === session.stage ? "workflow-section-active" : ""}`}
-              key={section.stage}
-              style={{ animationDelay: `${index * 80}ms` }}
-            >
-              <div>
-                <p className="font-mono text-xs text-[var(--accent-strong)]">{stageLabel(section.stage)}</p>
-                <h2 className="mt-2 text-3xl font-semibold tracking-tight">{section.title}工作流</h2>
-                <p className="mt-2 max-w-[68ch] text-sm leading-6 text-[var(--muted)]">{section.summary}</p>
-              </div>
-              <div className="grid gap-4 md:grid-cols-2">
-                {section.fields.map((field) => (
-                  <label className={`grid gap-2 text-sm ${field.multiline ? "md:col-span-2" : ""}`} key={field.name}>
-                    {field.label}
-                    {field.multiline ? (
-                      <textarea
-                        className="field min-h-28"
-                        name={field.name}
-                        defaultValue={spark[field.name]}
-                        placeholder={field.placeholder}
-                      />
-                    ) : (
-                      <input className="field" name={field.name} defaultValue={spark[field.name]} placeholder={field.placeholder} />
-                    )}
-                  </label>
-                ))}
-              </div>
-            </section>
-          ))}
-          <button className="button button-primary justify-self-start" type="submit">
-            保存拍摄流程
-          </button>
-        </form>
+        <WorkflowEditor
+          currentStage={session.stage}
+          sections={workflowSections}
+          spark={spark}
+          updateAction={updateSparkAction.bind(null, session.id)}
+        />
 
         <div className="grid content-start gap-4 xl:sticky xl:top-6">
           <form action={updatePlanAction.bind(null, session.id)} className="panel grid gap-4 p-5">
