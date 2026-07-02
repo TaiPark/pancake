@@ -7,7 +7,7 @@ FROM node:22-alpine AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-RUN node -e "console.log('next', require('next/package.json').version); console.log('tailwindcss', require('tailwindcss/package.json').version); console.log('@tailwindcss/postcss', require('@tailwindcss/postcss/package.json').version)"
+RUN node -e "console.log('next', require('next/package.json').version); console.log('tailwindcss', require('tailwindcss/package.json').version); console.log('@tailwindcss/postcss', require.resolve('@tailwindcss/postcss'))"
 RUN npx prisma generate
 RUN npm run build && \
     if ! test -d .next/static/css || ! find .next/static/css -type f -name "*.css" | grep -q .; then \
