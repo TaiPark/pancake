@@ -37,11 +37,12 @@ $SUDO $COMPOSE up -d --force-recreate app
 
 echo "==> Wait for app health"
 for attempt in {1..30}; do
-  if curl -fsS -o /dev/null "http://127.0.0.1:3000/login"; then
+  STATUS="$(curl -s -o /dev/null -w '%{http_code}' "http://127.0.0.1:3000/login" || true)"
+  if [[ "$STATUS" == "200" ]]; then
     break
   fi
   if [[ "$attempt" == "30" ]]; then
-    echo "ERROR: app did not respond on http://127.0.0.1:3000/login"
+    echo "ERROR: app did not return 200 on http://127.0.0.1:3000/login; last status was ${STATUS:-no response}"
     $SUDO $COMPOSE logs app --tail=120
     exit 1
   fi
