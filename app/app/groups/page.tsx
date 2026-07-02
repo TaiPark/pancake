@@ -33,7 +33,7 @@ export default async function GroupsPage({ searchParams }: { searchParams: Promi
             选择一个创作小组。
           </h1>
           <p className="mt-5 max-w-[48ch] leading-7 text-[var(--muted)]">
-            Pancake 按群组组织灵感、策划和作品反馈。每个群组都有自己的 Session 看板。
+            Pancake 按群组组织拍摄前准备、拍摄中执行和拍摄后复盘。每个群组都有自己的 Session 看板。
           </p>
         </div>
         <div className="panel grid gap-4 p-5">

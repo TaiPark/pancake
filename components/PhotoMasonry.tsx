@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { Trash } from "@phosphor-icons/react";
 import { useRouter } from "next/navigation";
+import { motion } from "motion/react";
 
 type Photo = {
   id: string;
@@ -31,7 +32,15 @@ export function PhotoMasonry({ photos }: { photos: Photo[] }) {
   return (
     <div className="masonry">
       {photos.map((photo, index) => (
-        <figure className="masonry-item panel reveal overflow-hidden" style={{ animationDelay: `${index * 45}ms` }} key={photo.id}>
+        <motion.figure
+          className="masonry-item panel reveal overflow-hidden"
+          style={{ animationDelay: `${index * 45}ms` }}
+          initial={{ opacity: 0, y: 18, scale: 0.98 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          whileHover={{ y: -4 }}
+          transition={{ duration: 0.42, delay: index * 0.035, ease: [0.16, 1, 0.3, 1] }}
+          key={photo.id}
+        >
           <Image
             src={photo.src}
             alt={photo.caption || "摄影作品"}
@@ -50,7 +59,7 @@ export function PhotoMasonry({ photos }: { photos: Photo[] }) {
               <Trash size={16} />
             </button>
           </figcaption>
-        </figure>
+        </motion.figure>
       ))}
     </div>
   );

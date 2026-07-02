@@ -7,7 +7,8 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { auth, signIn, signOut } from "@/lib/auth";
-import { canMoveSessionStage, defaultSparkFields } from "@/lib/domain";
+import { canMoveSessionStage, defaultPlanMarkdown, defaultSparkFields } from "@/lib/domain";
+import { validateRegistrationInvite } from "@/lib/invite";
 import { prisma } from "@/lib/prisma";
 import { requireGroupMember } from "@/lib/permissions";
 import { makeInviteCode, slugify } from "@/lib/slug";
@@ -16,7 +17,8 @@ import { createPhotoUploadUrl } from "@/lib/storage";
 const signupSchema = z.object({
   name: z.string().min(2, "请填写昵称"),
   email: z.string().email("邮箱格式不正确"),
-  password: z.string().min(8, "密码至少 8 位")
+  password: z.string().min(8, "密码至少 8 位"),
+  inviteCode: z.string().min(1, "请填写邀请码")
 });
 
 const loginSchema = z.object({
@@ -37,6 +39,10 @@ export async function signupAction(_state: { error?: string } | undefined, formD
   const parsed = signupSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "注册信息不完整" };
+  }
+
+  if (!validateRegistrationInvite(parsed.data.inviteCode)) {
+    return { error: "邀请码不正确" };
   }
 
   const email = parsed.data.email.toLowerCase();
@@ -145,6 +151,7 @@ export async function createSessionAction(groupId: string, formData: FormData) {
       groupId,
       title,
       sparkFields: defaultSparkFields,
+      planMarkdown: defaultPlanMarkdown,
       updatedById: userId
     }
   });
@@ -190,12 +197,9 @@ export async function updateSparkAction(sessionId: string, formData: FormData) {
   await prisma.session.update({
     where: { id: sessionId },
     data: {
-      sparkFields: {
-        theme: String(formData.get("theme") ?? ""),
-        mood: String(formData.get("mood") ?? ""),
-        references: String(formData.get("references") ?? ""),
-        notes: String(formData.get("notes") ?? "")
-      },
+      sparkFields: Object.fromEntries(
+        Object.keys(defaultSparkFields).map((key) => [key, String(formData.get(key) ?? "")])
+      ),
       updatedById: userId
     }
   });

@@ -3,7 +3,7 @@ import { logoutAction } from "@/app/actions";
 
 export function AppShell({ children, email }: { children: React.ReactNode; email?: string | null }) {
   return (
-    <main className="min-h-[100dvh] px-4 py-5 md:px-8">
+    <main className="relative z-10 min-h-[100dvh] px-4 py-5 md:px-8">
       <header className="mx-auto flex h-16 max-w-[1440px] items-center justify-between border-b border-white/10">
         <Link href="/app/groups" className="flex items-baseline gap-3">
           <span className="text-xl font-semibold tracking-tight">pancake</span>

@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
+import { motion } from "motion/react";
 
 type AuthFormProps = {
   mode: "login" | "signup";
@@ -22,6 +23,7 @@ export function AuthForm({ mode }: AuthFormProps) {
     const formData = new FormData(form);
     const email = String(formData.get("email") ?? "");
     const password = String(formData.get("password") ?? "");
+    const inviteCode = String(formData.get("inviteCode") ?? "");
 
     startTransition(async () => {
       if (mode === "signup") {
@@ -31,7 +33,8 @@ export function AuthForm({ mode }: AuthFormProps) {
           body: JSON.stringify({
             name: String(formData.get("name") ?? ""),
             email,
-            password
+            password,
+            inviteCode
           })
         });
 
@@ -59,30 +62,53 @@ export function AuthForm({ mode }: AuthFormProps) {
   }
 
   return (
-    <form onSubmit={onSubmit} className="panel reveal grid gap-5 p-6 md:p-8">
-      <div>
+    <motion.form
+      onSubmit={onSubmit}
+      className="panel reveal grid gap-5 p-6 md:p-8"
+      initial="hidden"
+      animate="show"
+      variants={{
+        hidden: { opacity: 0, y: 18, scale: 0.98 },
+        show: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.48, ease: [0.16, 1, 0.3, 1], staggerChildren: 0.055 } }
+      }}
+    >
+      <motion.div variants={{ hidden: { opacity: 0, y: 10 }, show: { opacity: 1, y: 0 } }}>
         <h1 className="text-3xl font-semibold tracking-tight md:text-5xl">
           {mode === "login" ? "回到拍摄现场" : "创建 Pancake 账号"}
         </h1>
         <p className="mt-4 max-w-[42ch] text-sm leading-6 text-[var(--muted)]">
           {mode === "login"
-            ? "继续整理群组里的灵感、策划和作品反馈。"
-            : "给摄影小组一个能沉淀想法和作品的暗房。"}
+            ? "继续推进群组里的拍摄前准备、现场记录和拍后复盘。"
+            : "邀请码验证后即可创建账号，进入摄影协作工作台。"}
         </p>
-      </div>
+      </motion.div>
 
       {mode === "signup" ? (
-        <label className="grid gap-2 text-sm">
+        <motion.label className="grid gap-2 text-sm" variants={{ hidden: { opacity: 0, y: 10 }, show: { opacity: 1, y: 0 } }}>
           昵称
           <input className="field" name="name" autoComplete="name" required minLength={2} />
-        </label>
+        </motion.label>
       ) : null}
 
-      <label className="grid gap-2 text-sm">
+      {mode === "signup" ? (
+        <motion.label className="grid gap-2 text-sm" variants={{ hidden: { opacity: 0, y: 10 }, show: { opacity: 1, y: 0 } }}>
+          注册邀请码
+          <input
+            className="field uppercase"
+            name="inviteCode"
+            autoComplete="one-time-code"
+            placeholder="BILIGO"
+            required
+          />
+          <span className="text-xs leading-5 text-[var(--muted)]">当前内测注册需要邀请码。</span>
+        </motion.label>
+      ) : null}
+
+      <motion.label className="grid gap-2 text-sm" variants={{ hidden: { opacity: 0, y: 10 }, show: { opacity: 1, y: 0 } }}>
         邮箱
         <input className="field" name="email" type="email" autoComplete="email" required />
-      </label>
-      <label className="grid gap-2 text-sm">
+      </motion.label>
+      <motion.label className="grid gap-2 text-sm" variants={{ hidden: { opacity: 0, y: 10 }, show: { opacity: 1, y: 0 } }}>
         密码
         <input
           className="field"
@@ -92,24 +118,31 @@ export function AuthForm({ mode }: AuthFormProps) {
           required
           minLength={8}
         />
-      </label>
+      </motion.label>
 
       {error ? (
-        <p className="rounded-[8px] border border-red-400/30 bg-red-950/30 px-3 py-2 text-sm text-red-100">
+        <p aria-live="polite" className="rounded-[8px] border border-red-400/30 bg-red-950/30 px-3 py-2 text-sm text-red-100">
           {error}
         </p>
       ) : null}
 
-      <button className="button button-primary" type="submit" disabled={pending}>
+      <motion.button
+        className="button button-primary"
+        type="submit"
+        disabled={pending}
+        variants={{ hidden: { opacity: 0, y: 10 }, show: { opacity: 1, y: 0 } }}
+        whileHover={{ y: -2 }}
+        whileTap={{ y: 1, scale: 0.99 }}
+      >
         {pending ? "处理中" : mode === "login" ? "登录" : "注册并进入"}
-      </button>
+      </motion.button>
 
-      <p className="text-sm text-[var(--muted)]">
+      <motion.p className="text-sm text-[var(--muted)]" variants={{ hidden: { opacity: 0, y: 10 }, show: { opacity: 1, y: 0 } }}>
         {mode === "login" ? "还没有账号？" : "已经有账号？"}
         <Link className="ml-2 text-[var(--accent-strong)]" href={mode === "login" ? "/signup" : "/login"}>
           {mode === "login" ? "去注册" : "去登录"}
         </Link>
-      </p>
-    </form>
+      </motion.p>
+    </motion.form>
   );
 }

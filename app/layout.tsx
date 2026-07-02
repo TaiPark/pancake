@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { KineticBackground } from "@/components/KineticBackground";
 import "./globals.css";
 
 const geist = Geist({
@@ -21,6 +22,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="zh-CN" className={`${geist.variable} ${geistMono.variable}`}>
       <body>
+        <KineticBackground />
         <div className="grain" />
         {children}
       </body>

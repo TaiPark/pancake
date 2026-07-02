@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ArrowRight, Camera, NotePencil } from "@phosphor-icons/react/dist/ssr";
 import { SessionStage, type Session } from "@prisma/client";
 import { updateSessionStageAction } from "@/app/actions";
-import { stageHint, stageLabel } from "@/lib/domain";
+import { canMoveSessionStage, stageHint, stageLabel } from "@/lib/domain";
 import { StageBadge } from "@/components/StageBadge";
 
 const stages: SessionStage[] = [SessionStage.SPARK, SessionStage.PLAN, SessionStage.FEEDBACK];
@@ -48,7 +48,7 @@ export function KanbanBoard({ groupId, sessions }: { groupId: string; sessions: 
                     <div className="mt-4 flex flex-wrap gap-3 text-xs text-[var(--muted)]">
                       <span className="inline-flex items-center gap-1">
                         <NotePencil size={14} weight="duotone" />
-                        {session.planMarkdown ? "已有策划" : "待写策划"}
+                        {session.planMarkdown ? "有执行文档" : "待写文档"}
                       </span>
                       <span className="inline-flex items-center gap-1">
                         <Camera size={14} weight="duotone" />
@@ -62,7 +62,7 @@ export function KanbanBoard({ groupId, sessions }: { groupId: string; sessions: 
 
                   <div className="mt-4 flex gap-2">
                     {stages
-                      .filter((target) => target !== session.stage)
+                      .filter((target) => target !== session.stage && canMoveSessionStage(session.stage, target))
                       .map((target) => (
                         <form className="flex-1" action={updateSessionStageAction.bind(null, session.id, target)} key={target}>
                           <button className="button button-secondary min-h-9 w-full px-2 text-xs" type="submit">

@@ -43,7 +43,7 @@ export default async function GroupBoardPage({ params }: { params: Promise<{ gro
       <div className="grid gap-8">
       <section className="reveal grid gap-5 xl:grid-cols-[1fr_25rem] xl:items-end">
         <div>
-          <p className="font-mono text-xs uppercase tracking-[0.18em] text-[var(--accent-strong)]">Group Board</p>
+          <p className="font-mono text-xs uppercase tracking-[0.18em] text-[var(--accent-strong)]">Shoot Board</p>
           <h1 className="mt-4 text-5xl font-semibold leading-[0.98] tracking-tight md:text-7xl">{group.name}</h1>
           <div className="mt-6 flex flex-wrap gap-3 text-sm text-[var(--muted)]">
             <span>邀请码 {group.inviteCode}</span>

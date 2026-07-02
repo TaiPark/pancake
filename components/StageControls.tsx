@@ -10,7 +10,7 @@ export function StageControls({ sessionId, stage }: { sessionId: string; stage: 
     <div className="panel flex flex-col gap-3 p-4 md:flex-row md:items-center md:justify-between">
       <div>
         <StageBadge stage={stage} />
-        <p className="mt-2 text-sm text-[var(--muted)]">阶段切换为显式保存，避免多人同时编辑时误拖动。</p>
+        <p className="mt-2 text-sm text-[var(--muted)]">按拍摄前、中、后的顺序推进；可回退相邻阶段补资料。</p>
       </div>
       <div className="flex flex-wrap gap-2">
         {stages.map((target) => (
