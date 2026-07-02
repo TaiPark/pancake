@@ -1,14 +1,21 @@
 FROM node:22-alpine AS deps
 WORKDIR /app
 COPY package.json package-lock.json* ./
-RUN npm install
+RUN npm ci --include=dev
 
 FROM node:22-alpine AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+RUN node -e "console.log('next', require('next/package.json').version); console.log('tailwindcss', require('tailwindcss/package.json').version); console.log('@tailwindcss/postcss', require('@tailwindcss/postcss/package.json').version)"
 RUN npx prisma generate
-RUN npm run build
+RUN npm run build && \
+    if ! test -d .next/static/css || ! find .next/static/css -type f -name "*.css" | grep -q .; then \
+      echo "ERROR: Next build did not emit CSS assets."; \
+      echo "Contents of .next/static:"; \
+      find .next/static -maxdepth 4 -type f | sort | sed -n '1,160p'; \
+      exit 1; \
+    fi
 
 FROM node:22-alpine AS runner
 WORKDIR /app
