@@ -1,19 +1,65 @@
 "use client";
 
-import { useActionState } from "react";
+import { useState, useTransition } from "react";
 import Link from "next/link";
-import { loginAction, signupAction } from "@/app/actions";
+import { useRouter } from "next/navigation";
+import { signIn } from "next-auth/react";
 
 type AuthFormProps = {
   mode: "login" | "signup";
 };
 
 export function AuthForm({ mode }: AuthFormProps) {
-  const action = mode === "login" ? loginAction : signupAction;
-  const [state, formAction, pending] = useActionState(action, undefined);
+  const router = useRouter();
+  const [error, setError] = useState("");
+  const [pending, startTransition] = useTransition();
+
+  function onSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setError("");
+
+    const form = event.currentTarget;
+    const formData = new FormData(form);
+    const email = String(formData.get("email") ?? "");
+    const password = String(formData.get("password") ?? "");
+
+    startTransition(async () => {
+      if (mode === "signup") {
+        const response = await fetch("/api/signup", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: String(formData.get("name") ?? ""),
+            email,
+            password
+          })
+        });
+
+        if (!response.ok) {
+          const body = (await response.json().catch(() => null)) as { error?: string } | null;
+          setError(body?.error ?? "注册失败，请稍后再试");
+          return;
+        }
+      }
+
+      const result = await signIn("credentials", {
+        email,
+        password,
+        redirect: false
+      });
+
+      if (result?.error) {
+        setError(mode === "login" ? "邮箱或密码不正确" : "账号已创建，但自动登录失败");
+        return;
+      }
+
+      router.push("/app/groups");
+      router.refresh();
+    });
+  }
 
   return (
-    <form action={formAction} className="panel reveal grid gap-5 p-6 md:p-8">
+    <form onSubmit={onSubmit} className="panel reveal grid gap-5 p-6 md:p-8">
       <div>
         <h1 className="text-3xl font-semibold tracking-tight md:text-5xl">
           {mode === "login" ? "回到拍摄现场" : "创建 Pancake 账号"}
@@ -48,9 +94,9 @@ export function AuthForm({ mode }: AuthFormProps) {
         />
       </label>
 
-      {state?.error ? (
+      {error ? (
         <p className="rounded-[8px] border border-red-400/30 bg-red-950/30 px-3 py-2 text-sm text-red-100">
-          {state.error}
+          {error}
         </p>
       ) : null}
 

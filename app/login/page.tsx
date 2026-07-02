@@ -1,5 +1,7 @@
 import { AuthForm } from "@/components/AuthForm";
 
+export const dynamic = "force-static";
+
 export default function LoginPage() {
   return (
     <main className="grid min-h-[100dvh] place-items-center px-4 py-12">
