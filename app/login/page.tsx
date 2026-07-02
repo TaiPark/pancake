@@ -1,4 +1,5 @@
 import { AuthForm } from "@/components/AuthForm";
+import { APP_NAME } from "@/lib/brand";
 
 export const dynamic = "force-dynamic";
 
@@ -7,7 +8,7 @@ export default function LoginPage() {
     <main className="relative z-10 grid min-h-[100dvh] place-items-center px-4 py-12">
       <section className="grid w-full max-w-5xl gap-8 md:grid-cols-[0.85fr_1.15fr] md:items-center">
         <div className="reveal">
-          <p className="font-mono text-xs uppercase tracking-[0.18em] text-[var(--accent-strong)]">Pancake</p>
+          <p className="font-mono text-xs uppercase tracking-[0.18em] text-[var(--accent-strong)]">{APP_NAME}</p>
           <h2 className="mt-5 max-w-[10ch] text-5xl font-semibold leading-[1.02] tracking-tight md:text-6xl">
             别让好点子只停在群聊里。
           </h2>

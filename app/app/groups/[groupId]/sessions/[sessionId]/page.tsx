@@ -22,22 +22,28 @@ export default async function SessionPage({
   }
 
   const { groupId, sessionId } = await params;
-  const session = await prisma.session.findFirst({
-    where: {
-      id: sessionId,
-      groupId,
-      group: {
-        members: {
-          some: { userId: authSession!.user.id }
+  const [currentUser, session] = await Promise.all([
+    prisma.user.findUnique({
+      where: { id: authSession.user.id },
+      select: { name: true }
+    }),
+    prisma.session.findFirst({
+      where: {
+        id: sessionId,
+        groupId,
+        group: {
+          members: {
+            some: { userId: authSession!.user.id }
+          }
         }
+      },
+      include: {
+        group: { select: { id: true, name: true } },
+        photos: { orderBy: { createdAt: "desc" } },
+        updatedBy: { select: { name: true } }
       }
-    },
-    include: {
-      group: { select: { id: true, name: true } },
-      photos: { orderBy: { createdAt: "desc" } },
-      updatedBy: { select: { name: true } }
-    }
-  });
+    })
+  ]);
 
   if (!session) {
     notFound();
@@ -50,7 +56,7 @@ export default async function SessionPage({
   const activeSection = workflowSections.find((section) => section.stage === session.stage);
 
   return (
-    <AppShell email={authSession.user.email}>
+    <AppShell displayName={currentUser?.name ?? authSession.user.name ?? "成员"}>
       <div className="grid gap-6">
       <section className="reveal grid gap-4">
         <Link className="text-sm text-[var(--muted)] hover:text-[var(--text)]" href={`/app/groups/${groupId}`}>

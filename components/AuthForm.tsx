@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { motion } from "motion/react";
+import { APP_NAME } from "@/lib/brand";
 
 type AuthFormProps = {
   mode: "login" | "signup";
@@ -74,7 +75,7 @@ export function AuthForm({ mode }: AuthFormProps) {
     >
       <motion.div variants={{ hidden: { opacity: 0, y: 10 }, show: { opacity: 1, y: 0 } }}>
         <h1 className="text-3xl font-semibold tracking-tight md:text-5xl">
-          {mode === "login" ? "回到拍摄现场" : "创建 Pancake 账号"}
+          {mode === "login" ? "回到拍摄现场" : `创建 ${APP_NAME} 账号`}
         </h1>
         <p className="mt-4 max-w-[42ch] text-sm leading-6 text-[var(--muted)]">
           {mode === "login"
@@ -97,7 +98,6 @@ export function AuthForm({ mode }: AuthFormProps) {
             className="field uppercase"
             name="inviteCode"
             autoComplete="one-time-code"
-            placeholder="BILIGO"
             required
           />
           <span className="text-xs leading-5 text-[var(--muted)]">当前内测注册需要邀请码。</span>

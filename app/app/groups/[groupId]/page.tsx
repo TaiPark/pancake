@@ -12,34 +12,40 @@ export default async function GroupBoardPage({ params }: { params: Promise<{ gro
   }
 
   const { groupId } = await params;
-  const group = await prisma.group.findFirst({
-    where: {
-      id: groupId,
-      members: {
-        some: { userId: session!.user.id }
-      }
-    },
-    include: {
-      members: {
-        include: { user: { select: { name: true, email: true } } },
-        orderBy: { createdAt: "asc" }
+  const [currentUser, group] = await Promise.all([
+    prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { name: true }
+    }),
+    prisma.group.findFirst({
+      where: {
+        id: groupId,
+        members: {
+          some: { userId: session!.user.id }
+        }
       },
-      sessions: {
-        include: {
-          photos: { select: { id: true } },
-          updatedBy: { select: { name: true } }
+      include: {
+        members: {
+          include: { user: { select: { name: true, email: true } } },
+          orderBy: { createdAt: "asc" }
         },
-        orderBy: { updatedAt: "desc" }
+        sessions: {
+          include: {
+            photos: { select: { id: true } },
+            updatedBy: { select: { name: true } }
+          },
+          orderBy: { updatedAt: "desc" }
+        }
       }
-    }
-  });
+    })
+  ]);
 
   if (!group) {
     notFound();
   }
 
   return (
-    <AppShell email={session.user.email}>
+    <AppShell displayName={currentUser?.name ?? session.user.name ?? "成员"}>
       <div className="grid gap-8">
       <section className="reveal grid gap-5 xl:grid-cols-[1fr_25rem] xl:items-end">
         <div>
@@ -54,7 +60,7 @@ export default async function GroupBoardPage({ params }: { params: Promise<{ gro
         <form action={createSessionAction.bind(null, group.id)} className="panel grid gap-3 p-5">
           <label className="grid gap-2 text-sm">
             新 Session
-            <input className="field" name="title" placeholder="例如：雨后便利店人像" required minLength={2} />
+            <input className="field" name="title" required minLength={2} />
           </label>
           <button className="button button-primary" type="submit">
             创建 Session

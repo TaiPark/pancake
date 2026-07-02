@@ -12,20 +12,26 @@ export default async function GroupsPage({ searchParams }: { searchParams: Promi
   }
 
   const params = await searchParams;
-  const groups = await prisma.group.findMany({
-    where: {
-      members: {
-        some: { userId: session!.user.id }
-      }
-    },
-    include: {
-      _count: { select: { sessions: true, members: true } }
-    },
-    orderBy: { updatedAt: "desc" }
-  });
+  const [currentUser, groups] = await Promise.all([
+    prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { name: true }
+    }),
+    prisma.group.findMany({
+      where: {
+        members: {
+          some: { userId: session!.user.id }
+        }
+      },
+      include: {
+        _count: { select: { sessions: true, members: true } }
+      },
+      orderBy: { updatedAt: "desc" }
+    })
+  ]);
 
   return (
-    <AppShell email={session.user.email}>
+    <AppShell displayName={currentUser?.name ?? session.user.name ?? "成员"}>
       <div className="grid gap-8">
       <section className="reveal grid gap-5 md:grid-cols-[1.2fr_0.8fr] md:items-end">
         <div>
@@ -33,7 +39,7 @@ export default async function GroupsPage({ searchParams }: { searchParams: Promi
             选择一个创作小组。
           </h1>
           <p className="mt-5 max-w-[48ch] leading-7 text-[var(--muted)]">
-            Pancake 按群组组织拍摄前准备、拍摄中执行和拍摄后复盘。每个群组都有自己的 Session 看板。
+            PancakeHub 按群组组织拍摄前准备、拍摄中执行和拍摄后复盘。每个群组都有自己的 Session 看板。
           </p>
         </div>
         <div className="panel grid gap-4 p-5">

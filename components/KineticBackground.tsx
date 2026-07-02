@@ -10,12 +10,12 @@ export function KineticBackground() {
       <motion.div
         className="kinetic-grid"
         animate={reducedMotion ? undefined : { backgroundPosition: ["0px 0px", "96px 64px"] }}
-        transition={{ duration: 18, repeat: Infinity, ease: "linear" }}
+        transition={{ duration: 36, repeat: Infinity, ease: "linear" }}
       />
       <motion.div
         className="kinetic-sweep"
-        animate={reducedMotion ? undefined : { x: ["-20%", "20%"], opacity: [0.36, 0.58, 0.36] }}
-        transition={{ duration: 9, repeat: Infinity, repeatType: "mirror", ease: "easeInOut" }}
+        animate={reducedMotion ? undefined : { x: ["-8%", "8%"], opacity: [0.12, 0.22, 0.12] }}
+        transition={{ duration: 18, repeat: Infinity, repeatType: "mirror", ease: "easeInOut" }}
       />
       <motion.div
         className="kinetic-scan"
