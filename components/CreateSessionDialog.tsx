@@ -130,6 +130,12 @@ export function CreateSessionDialog({ groupId, skills, hasLlmConfig }: CreateSes
               </label>
             ) : null}
 
+            {useAi && skills.length === 0 ? (
+              <div className="rounded-[8px] border border-white/10 bg-white/[0.03] p-3 text-sm leading-6 text-[var(--muted)]">
+                当前使用默认生成模板。需要更专业的提示时，可在群组设置里新建 Skill。
+              </div>
+            ) : null}
+
             <div className="flex flex-col gap-3 pt-2 sm:flex-row">
               <button className="button button-primary flex-1" disabled={pending || !title.trim()} type="submit">
                 {pending ? (useAi ? "正在创建并生成..." : "正在创建...") : useAi ? "创建并 AI 生成" : "创建 Session"}

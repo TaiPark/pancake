@@ -208,6 +208,20 @@ export async function joinGroupAction(formData: FormData) {
   redirect(`/app/groups/${group.id}`);
 }
 
+export async function deleteGroupAction(groupId: string): Promise<ActionState> {
+  const userId = await currentUserId();
+  if (!(await requireGroupOwner(userId, groupId))) {
+    return { error: "只有群组 OWNER 可以删除小组" };
+  }
+
+  await prisma.group.delete({
+    where: { id: groupId }
+  });
+
+  revalidatePath("/app/groups");
+  return { ok: true, message: "小组已删除" };
+}
+
 export async function createSessionAction(groupId: string, formData: FormData) {
   const userId = await currentUserId();
   await requireGroupMember(userId, groupId);

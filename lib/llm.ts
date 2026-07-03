@@ -65,6 +65,11 @@ ${fieldInstructions}
 export function buildSystemPrompt(skillSystemPrompt?: string): string {
   const base = `你是 PancakeHub 摄影规划助手。你的任务是根据用户的拍摄意图描述，生成一份完整的拍摄前规划文档。
 
+默认专业 Skill：
+- 围绕拍摄主题、分镜、灯光、服化造、现场执行和交付复盘给出可落地建议
+- 优先输出团队当天可以直接照着执行的内容，避免空泛形容
+- 如果没有自定义 Skill，使用这套默认摄影协作模板
+
 输出要求：
 - 必须输出合法的 JSON 对象，包含所有指定的字段
 - 每个字段的值是字符串类型

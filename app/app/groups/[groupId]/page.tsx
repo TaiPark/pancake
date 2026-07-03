@@ -1,9 +1,8 @@
 import { notFound, redirect } from "next/navigation";
 import { AppShell } from "@/components/AppShell";
 import { CreateSessionDialog } from "@/components/CreateSessionDialog";
+import { GroupSettingsDialog } from "@/components/GroupSettingsDialog";
 import { KanbanBoard } from "@/components/KanbanBoard";
-import { LlmConfigPanel } from "@/components/LlmConfigPanel";
-import { SkillManager } from "@/components/SkillManager";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
@@ -101,26 +100,23 @@ export default async function GroupBoardPage({ params }: { params: Promise<{ gro
               isDefault: skill.isDefault
             }))}
           />
+          <GroupSettingsDialog
+            existingConfig={
+              group.llmConfig
+                ? {
+                    apiKey: group.llmConfig.apiKey,
+                    baseUrl: group.llmConfig.baseUrl,
+                    model: group.llmConfig.model,
+                    temperature: group.llmConfig.temperature,
+                    maxTokens: group.llmConfig.maxTokens
+                  }
+                : null
+            }
+            groupId={group.id}
+            isOwner={isOwner}
+            skills={skills}
+          />
         </div>
-      </section>
-
-      <section className="grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
-        <LlmConfigPanel
-          existingConfig={
-            group.llmConfig
-              ? {
-                  apiKey: group.llmConfig.apiKey,
-                  baseUrl: group.llmConfig.baseUrl,
-                  model: group.llmConfig.model,
-                  temperature: group.llmConfig.temperature,
-                  maxTokens: group.llmConfig.maxTokens
-                }
-              : null
-          }
-          groupId={group.id}
-          isOwner={isOwner}
-        />
-        <SkillManager groupId={group.id} isOwner={isOwner} skills={skills} />
       </section>
 
       <KanbanBoard groupId={group.id} sessions={group.sessions} />

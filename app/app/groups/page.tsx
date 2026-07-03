@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createGroupAction, joinGroupAction } from "@/app/actions";
 import { AppShell } from "@/components/AppShell";
+import { DeleteGroupButton } from "@/components/DeleteGroupButton";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
@@ -74,18 +75,20 @@ export default async function GroupsPage({ searchParams }: { searchParams: Promi
         ) : null}
 
         {groups.map((group) => (
-          <Link
-            className="panel reveal block p-5 transition duration-200 hover:-translate-y-1 hover:border-[var(--accent)]/50"
-            href={`/app/groups/${group.id}`}
+          <article
+            className="panel reveal grid gap-5 p-5 transition duration-200 hover:-translate-y-1 hover:border-[var(--accent)]/50"
             key={group.id}
           >
-            <h2 className="text-2xl font-semibold tracking-tight">{group.name}</h2>
-            <p className="mt-5 font-mono text-xs text-[var(--muted)]">邀请码 {group.inviteCode}</p>
-            <div className="mt-6 flex gap-5 text-sm text-[var(--muted)]">
-              <span>{group._count.sessions} 个 Session</span>
-              <span>{group._count.members} 位成员</span>
-            </div>
-          </Link>
+            <Link className="block" href={`/app/groups/${group.id}`}>
+              <h2 className="text-2xl font-semibold tracking-tight">{group.name}</h2>
+              <p className="mt-5 font-mono text-xs text-[var(--muted)]">邀请码 {group.inviteCode}</p>
+              <div className="mt-6 flex gap-5 text-sm text-[var(--muted)]">
+                <span>{group._count.sessions} 个 Session</span>
+                <span>{group._count.members} 位成员</span>
+              </div>
+            </Link>
+            {group.ownerId === session.user.id ? <DeleteGroupButton groupId={group.id} groupName={group.name} /> : null}
+          </article>
         ))}
       </section>
       </div>

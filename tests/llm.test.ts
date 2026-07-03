@@ -23,6 +23,7 @@ describe("llm helpers", () => {
 
   test("builds a system prompt with optional skill guidance", () => {
     expect(buildSystemPrompt()).toContain("PancakeHub 摄影规划助手");
+    expect(buildSystemPrompt()).toContain("拍摄主题、分镜、灯光、服化造、现场执行和交付复盘");
     expect(buildSystemPrompt("重点关注人像情绪")).toContain("重点关注人像情绪");
   });
 
