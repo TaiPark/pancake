@@ -18,16 +18,18 @@
 
 html {
   background: var(--bg);
+  overflow-x: clip;
 }
 
 body {
   margin: 0;
   min-height: 100dvh;
   background:
-    linear-gradient(135deg, rgb(115 230 199 / 0.07), transparent 32%),
+    radial-gradient(circle at 76% 7%, rgb(115 230 199 / 0.1), transparent 30rem),
     linear-gradient(180deg, #08090b 0%, #101217 48%, #090a0d 100%);
   color: var(--text);
   font-family: var(--font-sans), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  overflow-x: clip;
 }
 
 button,
@@ -46,45 +48,37 @@ a {
   color: var(--text);
 }
 
-.kinetic-background {
+.side-rays-background {
   pointer-events: none;
   position: fixed;
   inset: 0;
   z-index: 0;
   overflow: hidden;
   background:
-    linear-gradient(110deg, rgb(115 230 199 / 0.035), transparent 30%, rgb(255 255 255 / 0.018) 58%, transparent 78%),
+    linear-gradient(110deg, rgb(115 230 199 / 0.025), transparent 30%, rgb(255 255 255 / 0.018) 58%, transparent 78%),
     #08090b;
 }
 
-.kinetic-grid,
-.kinetic-sweep,
-.kinetic-scan {
+.side-rays-background::after {
+  content: "";
   position: absolute;
-  inset: -20%;
-}
-
-.kinetic-grid {
-  opacity: 0.11;
-  background-image:
-    linear-gradient(rgb(255 255 255 / 0.08) 1px, transparent 1px),
-    linear-gradient(90deg, rgb(255 255 255 / 0.08) 1px, transparent 1px);
-  background-size: 48px 48px;
-  mask-image: linear-gradient(180deg, transparent 0%, black 18%, black 72%, transparent 100%);
-}
-
-.kinetic-sweep {
-  opacity: 0.22;
+  inset: 0;
   background:
-    linear-gradient(108deg, transparent 18%, rgb(115 230 199 / 0.16) 42%, rgb(255 255 255 / 0.06) 50%, transparent 68%);
-  filter: blur(24px);
-  transform: rotate(-8deg);
+    radial-gradient(circle at 18% 72%, rgb(242 209 139 / 0.08), transparent 24rem),
+    linear-gradient(180deg, transparent 0%, rgb(8 9 11 / 0.72) 78%, #08090b 100%);
 }
 
-.kinetic-scan {
-  height: 18rem;
-  opacity: 0.05;
-  background: linear-gradient(180deg, transparent, rgb(115 230 199 / 0.32), transparent);
+.side-rays-container {
+  position: relative;
+  z-index: 3;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.side-rays-container canvas {
+  display: block;
 }
 
 .grain {
@@ -118,6 +112,133 @@ a {
   background: linear-gradient(115deg, transparent 0%, rgb(115 230 199 / 0.055) 44%, transparent 60%);
   transform: translateX(-40%);
   transition: opacity 220ms ease, transform 640ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.border-glow-card {
+  --edge-proximity: 0;
+  --cursor-angle: 45deg;
+  --edge-sensitivity: 30;
+  --color-sensitivity: calc(var(--edge-sensitivity) + 20);
+  --border-radius: 8px;
+  --glow-padding: 36px;
+  --cone-spread: 25;
+
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  overflow: visible;
+  border: 1px solid rgb(255 255 255 / 0.15);
+  border-radius: var(--border-radius);
+  background: var(--card-bg, #111318);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.06),
+    0 18px 80px rgb(0 0 0 / 0.34);
+  transform: translate3d(0, 0, 0.01px);
+}
+
+.border-glow-card::before,
+.border-glow-card::after,
+.border-glow-card > .edge-light {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  transition: opacity 0.25s ease-out;
+}
+
+.border-glow-card:not(:hover):not(.sweep-active)::before,
+.border-glow-card:not(:hover):not(.sweep-active)::after,
+.border-glow-card:not(:hover):not(.sweep-active) > .edge-light {
+  opacity: 0;
+  transition: opacity 0.75s ease-in-out;
+}
+
+.border-glow-card::before {
+  border: 1px solid transparent;
+  background:
+    linear-gradient(var(--card-bg, #111318) 0 100%) padding-box,
+    linear-gradient(rgb(255 255 255 / 0%) 0% 100%) border-box,
+    var(--gradient-one, radial-gradient(at 80% 55%, #73e6c7 0, transparent 50%)) border-box,
+    var(--gradient-two, radial-gradient(at 69% 34%, #f2d18b 0, transparent 50%)) border-box,
+    var(--gradient-three, radial-gradient(at 8% 6%, #8fb7ff 0, transparent 50%)) border-box,
+    var(--gradient-four, radial-gradient(at 41% 38%, #73e6c7 0, transparent 50%)) border-box,
+    var(--gradient-five, radial-gradient(at 86% 85%, #f2d18b 0, transparent 50%)) border-box,
+    var(--gradient-six, radial-gradient(at 82% 18%, #8fb7ff 0, transparent 50%)) border-box,
+    var(--gradient-seven, radial-gradient(at 51% 4%, #f2d18b 0, transparent 50%)) border-box,
+    var(--gradient-base, linear-gradient(#73e6c7 0 100%)) border-box;
+  opacity: calc((var(--edge-proximity) - var(--color-sensitivity)) / (100 - var(--color-sensitivity)));
+  mask-image:
+    conic-gradient(
+      from var(--cursor-angle) at center,
+      black calc(var(--cone-spread) * 1%),
+      transparent calc((var(--cone-spread) + 15) * 1%),
+      transparent calc((100 - var(--cone-spread) - 15) * 1%),
+      black calc((100 - var(--cone-spread)) * 1%)
+    );
+}
+
+.border-glow-card::after {
+  border: 1px solid transparent;
+  background:
+    var(--gradient-one, radial-gradient(at 80% 55%, #73e6c7 0, transparent 50%)) padding-box,
+    var(--gradient-two, radial-gradient(at 69% 34%, #f2d18b 0, transparent 50%)) padding-box,
+    var(--gradient-three, radial-gradient(at 8% 6%, #8fb7ff 0, transparent 50%)) padding-box,
+    var(--gradient-four, radial-gradient(at 41% 38%, #73e6c7 0, transparent 50%)) padding-box,
+    var(--gradient-five, radial-gradient(at 86% 85%, #f2d18b 0, transparent 50%)) padding-box,
+    var(--gradient-six, radial-gradient(at 82% 18%, #8fb7ff 0, transparent 50%)) padding-box,
+    var(--gradient-seven, radial-gradient(at 51% 4%, #f2d18b 0, transparent 50%)) padding-box,
+    var(--gradient-base, linear-gradient(#73e6c7 0 100%)) padding-box;
+  opacity: calc(var(--fill-opacity, 0.3) * (var(--edge-proximity) - var(--color-sensitivity)) / (100 - var(--color-sensitivity)));
+  mix-blend-mode: soft-light;
+  mask-image:
+    linear-gradient(to bottom, black, black),
+    radial-gradient(ellipse at 50% 50%, black 40%, transparent 65%),
+    radial-gradient(ellipse at 66% 66%, black 5%, transparent 40%),
+    radial-gradient(ellipse at 33% 33%, black 5%, transparent 40%),
+    radial-gradient(ellipse at 66% 33%, black 5%, transparent 40%),
+    radial-gradient(ellipse at 33% 66%, black 5%, transparent 40%),
+    conic-gradient(from var(--cursor-angle) at center, transparent 5%, black 15%, black 85%, transparent 95%);
+  mask-composite: subtract, add, add, add, add, add;
+}
+
+.border-glow-card > .edge-light {
+  inset: calc(var(--glow-padding) * -1);
+  z-index: 1;
+  pointer-events: none;
+  opacity: calc((var(--edge-proximity) - var(--edge-sensitivity)) / (100 - var(--edge-sensitivity)));
+  mix-blend-mode: plus-lighter;
+  mask-image: conic-gradient(from var(--cursor-angle) at center, black 2.5%, transparent 10%, transparent 90%, black 97.5%);
+}
+
+.border-glow-card > .edge-light::before {
+  content: "";
+  position: absolute;
+  inset: var(--glow-padding);
+  border-radius: inherit;
+  box-shadow:
+    inset 0 0 0 1px var(--glow-color, hsl(166deg 68% 68% / 100%)),
+    inset 0 0 1px 0 var(--glow-color-60, hsl(166deg 68% 68% / 60%)),
+    inset 0 0 3px 0 var(--glow-color-50, hsl(166deg 68% 68% / 50%)),
+    inset 0 0 6px 0 var(--glow-color-40, hsl(166deg 68% 68% / 40%)),
+    inset 0 0 15px 0 var(--glow-color-30, hsl(166deg 68% 68% / 30%)),
+    inset 0 0 25px 2px var(--glow-color-20, hsl(166deg 68% 68% / 20%)),
+    inset 0 0 50px 2px var(--glow-color-10, hsl(166deg 68% 68% / 10%)),
+    0 0 1px 0 var(--glow-color-60, hsl(166deg 68% 68% / 60%)),
+    0 0 3px 0 var(--glow-color-50, hsl(166deg 68% 68% / 50%)),
+    0 0 6px 0 var(--glow-color-40, hsl(166deg 68% 68% / 40%)),
+    0 0 15px 0 var(--glow-color-30, hsl(166deg 68% 68% / 30%)),
+    0 0 25px 2px var(--glow-color-20, hsl(166deg 68% 68% / 20%)),
+    0 0 50px 2px var(--glow-color-10, hsl(166deg 68% 68% / 10%));
+}
+
+.border-glow-inner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: inherit;
 }
 
 .panel:hover::before,
@@ -223,6 +344,16 @@ a {
 @media (min-width: 1180px) {
   .masonry {
     column-count: 3;
+  }
+}
+
+@media (max-width: 767px) {
+  .border-glow-card {
+    --glow-padding: 14px;
+  }
+
+  .border-glow-card > .edge-light {
+    inset: -14px;
   }
 }
 

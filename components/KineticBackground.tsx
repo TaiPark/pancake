@@ -1,26 +1,21 @@
-"use client";
-
-import { motion, useReducedMotion } from "motion/react";
+import { SideRays } from "@/components/react-bits/SideRays";
 
 export function KineticBackground() {
-  const reducedMotion = useReducedMotion();
-
   return (
-    <div className="kinetic-background" aria-hidden="true">
-      <motion.div
-        className="kinetic-grid"
-        animate={reducedMotion ? undefined : { backgroundPosition: ["0px 0px", "96px 64px"] }}
-        transition={{ duration: 36, repeat: Infinity, ease: "linear" }}
-      />
-      <motion.div
-        className="kinetic-sweep"
-        animate={reducedMotion ? undefined : { x: ["-8%", "8%"], opacity: [0.12, 0.22, 0.12] }}
-        transition={{ duration: 18, repeat: Infinity, repeatType: "mirror", ease: "easeInOut" }}
-      />
-      <motion.div
-        className="kinetic-scan"
-        animate={reducedMotion ? undefined : { y: ["-12%", "112%"] }}
-        transition={{ duration: 7.5, repeat: Infinity, ease: "linear" }}
+    <div className="side-rays-background" aria-hidden="true">
+      <SideRays
+        className="opacity-90"
+        origin="top-right"
+        speed={0.72}
+        rayColor1="#73e6c7"
+        rayColor2="#f2d18b"
+        intensity={1.45}
+        spread={1.4}
+        tilt={-10}
+        saturation={0.95}
+        blend={0.62}
+        falloff={1.55}
+        opacity={0.72}
       />
     </div>
   );

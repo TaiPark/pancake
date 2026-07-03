@@ -25,6 +25,7 @@
     "motion": "^11.18.2",
     "next": "^15.1.4",
     "next-auth": "^5.0.0-beta.25",
+    "ogl": "^1.0.11",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "sanitize-html": "^2.14.0",
