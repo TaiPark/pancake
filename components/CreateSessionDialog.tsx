@@ -78,7 +78,6 @@ export function CreateSessionDialog({ groupId, skills, hasLlmConfig }: CreateSes
                 maxLength={100}
                 name="title"
                 onChange={(event) => setTitle(event.target.value)}
-                placeholder="例如：秋日公园人像"
                 required
                 value={title}
               />

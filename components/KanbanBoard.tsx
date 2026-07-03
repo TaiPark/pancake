@@ -33,14 +33,14 @@ export function KanbanBoard({ groupId, sessions }: { groupId: string; sessions: 
 
             <div className="grid gap-3">
               {columnSessions.length === 0 ? (
-                <div className="rounded-[8px] border border-dashed border-white/12 p-5 text-sm text-[var(--muted)]">
+                <div className="studio-card border-dashed p-5 text-sm text-[var(--muted)]">
                   这里暂时没有 {stageLabel(stage)} 中的 Session。
                 </div>
               ) : null}
 
               {columnSessions.map((session) => (
                 <article
-                  className="group rounded-[8px] border border-white/10 bg-[#11100f]/70 p-4 transition duration-200 hover:-translate-y-1 hover:border-[var(--accent)]/50"
+                  className="studio-card group p-4 transition duration-200 hover:-translate-y-1 hover:border-[var(--accent)]/50"
                   key={session.id}
                 >
                   <Link href={`/app/groups/${groupId}/sessions/${session.id}`}>

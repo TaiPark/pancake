@@ -63,12 +63,7 @@ export function PhotoUploader({ sessionId }: { sessionId: string }) {
       </label>
       <label className="grid gap-2 text-sm">
         照片说明
-        <input
-          className="field"
-          value={caption}
-          onChange={(event) => setCaption(event.target.value)}
-          placeholder="例如：第二张保留了雨痕的反光"
-        />
+        <input className="field" value={caption} onChange={(event) => setCaption(event.target.value)} />
       </label>
       {error ? <p className="text-sm text-red-200">{error}</p> : null}
       <button className="button button-primary" type="submit" disabled={isPending}>

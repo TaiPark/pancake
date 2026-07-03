@@ -5,6 +5,7 @@ import { updatePlanAction, updateSparkAction } from "@/app/actions";
 import { AppShell } from "@/components/AppShell";
 import { PhotoMasonry } from "@/components/PhotoMasonry";
 import { PhotoUploader } from "@/components/PhotoUploader";
+import { BorderGlow } from "@/components/react-bits/BorderGlow";
 import { WorkflowEditor } from "@/components/WorkflowEditor";
 import { auth } from "@/lib/auth";
 import { defaultPlanMarkdown, parseSparkFields, stageLabel, workflowSections } from "@/lib/domain";
@@ -63,24 +64,43 @@ export default async function SessionPage({
   return (
     <AppShell displayName={currentUser?.name ?? authSession.user.name ?? "成员"}>
       <div className="grid gap-6">
-      <section className="reveal grid gap-4">
-        <Link className="button button-secondary w-fit min-h-10 px-3 text-sm" href={`/app/groups/${groupId}`}>
-          <ArrowLeft size={16} weight="bold" />
-          返回 {session.group.name}
-        </Link>
-        <div className="grid gap-4">
-          <div>
-            <h1 className="max-w-[14ch] text-5xl font-semibold leading-[0.98] tracking-tight md:text-7xl">
-              {session.title}
-            </h1>
-            <div className="mt-5 flex flex-wrap gap-3 text-sm text-[var(--muted)]">
-              <span>当前：{activeSection?.title ?? stageLabel(session.stage)}</span>
-              <span>{completedFields}/{workflowFields.length} 项已填写</span>
-              <span>最后更新：{session.updatedBy?.name ?? "未知成员"}，{session.updatedAt.toLocaleString("zh-CN")}</span>
+        <BorderGlow
+          animated
+          className="reveal"
+          backgroundColor="#101218"
+          colors={["#73e6c7", "#f2d18b", "#89a8ff"]}
+          fillOpacity={0.2}
+          glowColor="166 68 68"
+          glowIntensity={0.56}
+        >
+          <section className="grid gap-6 p-5 md:p-6 lg:grid-cols-[1fr_0.9fr] lg:items-end lg:p-8">
+            <div>
+              <Link className="button button-secondary w-fit min-h-10 px-3 text-sm" href={`/app/groups/${groupId}`}>
+                <ArrowLeft size={16} weight="bold" />
+                返回 {session.group.name}
+              </Link>
+              <h1 className="mt-6 max-w-[14ch] text-[2.6rem] font-semibold leading-[0.98] tracking-tight md:text-6xl">
+                {session.title}
+              </h1>
             </div>
-          </div>
-        </div>
-      </section>
+            <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
+              <div className="studio-metric">
+                <strong>{activeSection?.title ?? stageLabel(session.stage)}</strong>
+                <span>当前阶段</span>
+              </div>
+              <div className="studio-metric">
+                <strong>
+                  {completedFields}/{workflowFields.length}
+                </strong>
+                <span>已填写字段</span>
+              </div>
+              <div className="studio-metric">
+                <strong>{session.updatedBy?.name ?? "未知成员"}</strong>
+                <span>{session.updatedAt.toLocaleString("zh-CN")} 更新</span>
+              </div>
+            </div>
+          </section>
+        </BorderGlow>
 
       <section className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
         <WorkflowEditor

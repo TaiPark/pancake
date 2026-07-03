@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createGroupAction, joinGroupAction } from "@/app/actions";
 import { AppShell } from "@/components/AppShell";
 import { DeleteGroupButton } from "@/components/DeleteGroupButton";
+import { BorderGlow } from "@/components/react-bits/BorderGlow";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
@@ -34,38 +35,63 @@ export default async function GroupsPage({ searchParams }: { searchParams: Promi
   return (
     <AppShell displayName={currentUser?.name ?? session.user.name ?? "成员"}>
       <div className="grid gap-8">
-      <section className="reveal grid gap-5 md:grid-cols-[1.2fr_0.8fr] md:items-end">
-        <div>
-          <h1 className="max-w-[12ch] text-5xl font-semibold leading-[0.98] tracking-tight md:text-7xl">
-            选择一个创作小组。
-          </h1>
-          <p className="mt-5 max-w-[48ch] leading-7 text-[var(--muted)]">
-            PancakeHub 按群组组织拍摄前准备、拍摄中执行和拍摄后复盘。每个群组都有自己的 Session 看板。
-          </p>
-        </div>
-        <div className="panel grid gap-4 p-5">
-          <form action={createGroupAction} className="grid gap-3">
-            <label className="grid gap-2 text-sm">
-              新群组名称
-              <input className="field" name="name" placeholder="例如：周末夜景小队" required minLength={2} />
-            </label>
-            <button className="button button-primary" type="submit">
-              创建群组
-            </button>
-          </form>
-          <div className="h-px bg-white/10" />
-          <form action={joinGroupAction} className="grid gap-3">
-            <label className="grid gap-2 text-sm">
-              邀请码
-              <input className="field uppercase" name="inviteCode" placeholder="8 位邀请码" required minLength={4} />
-            </label>
-            {params.error === "invalid-invite" ? <p className="text-sm text-red-200">邀请码无效。</p> : null}
-            <button className="button button-secondary" type="submit">
-              加入群组
-            </button>
-          </form>
-        </div>
-      </section>
+        <BorderGlow
+          animated
+          className="reveal"
+          backgroundColor="#101218"
+          colors={["#73e6c7", "#f2d18b", "#89a8ff"]}
+          fillOpacity={0.2}
+          glowColor="166 68 68"
+          glowIntensity={0.56}
+        >
+          <section className="grid gap-6 p-5 md:p-6 lg:grid-cols-[1.08fr_0.92fr] lg:items-end lg:p-8">
+            <div>
+              <p className="font-mono text-xs uppercase tracking-[0.18em] text-[var(--accent-strong)]">Creative groups</p>
+              <h1 className="mt-5 max-w-[12ch] text-[2.6rem] font-semibold leading-[0.98] tracking-tight md:text-6xl">
+                选择一个创作小组。
+              </h1>
+              <p className="mt-5 max-w-[48ch] leading-7 text-[var(--muted)]">
+                PancakeHub 按群组组织拍摄前准备、现场执行和拍后复盘。每个群组都有自己的 Session 看板。
+              </p>
+              <div className="mt-7 grid gap-3 sm:grid-cols-3">
+                <div className="studio-metric">
+                  <strong>{groups.length}</strong>
+                  <span>已加入小组</span>
+                </div>
+                <div className="studio-metric">
+                  <strong>{groups.reduce((count, group) => count + group._count.sessions, 0)}</strong>
+                  <span>进行中的 Session</span>
+                </div>
+                <div className="studio-metric">
+                  <strong>3</strong>
+                  <span>拍摄流程阶段</span>
+                </div>
+              </div>
+            </div>
+            <div className="studio-card grid gap-4 p-5">
+              <form action={createGroupAction} className="grid gap-3">
+                <label className="grid gap-2 text-sm">
+                  新群组名称
+                  <input className="field" name="name" required minLength={2} />
+                </label>
+                <button className="button button-primary" type="submit">
+                  创建群组
+                </button>
+              </form>
+              <div className="h-px bg-white/10" />
+              <form action={joinGroupAction} className="grid gap-3">
+                <label className="grid gap-2 text-sm">
+                  邀请码
+                  <input className="field uppercase" name="inviteCode" required minLength={4} />
+                </label>
+                {params.error === "invalid-invite" ? <p className="text-sm text-red-200">邀请码无效。</p> : null}
+                <button className="button button-secondary" type="submit">
+                  加入群组
+                </button>
+              </form>
+            </div>
+          </section>
+        </BorderGlow>
 
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {groups.length === 0 ? (

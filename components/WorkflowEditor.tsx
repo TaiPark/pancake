@@ -96,7 +96,7 @@ export function WorkflowEditor({
              <p className="mt-2 max-w-[68ch] text-sm leading-6 text-[var(--muted)]">{selectedSection.summary}</p>
            </div>
            {selectedSection.stage === "SPARK" ? (
-             <div className="grid gap-3 rounded-[8px] border border-white/10 bg-white/[0.03] p-3">
+             <div className="studio-card grid gap-3 p-3">
                <div className="flex flex-wrap items-center gap-3">
                  {aiGenerated ? (
                    <span className="rounded-full border border-[var(--accent)]/30 px-2 py-1 text-xs text-[var(--accent-strong)]">AI 已生成</span>

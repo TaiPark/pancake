@@ -3,6 +3,7 @@ import { AppShell } from "@/components/AppShell";
 import { CreateSessionDialog } from "@/components/CreateSessionDialog";
 import { GroupSettingsDialog } from "@/components/GroupSettingsDialog";
 import { KanbanBoard } from "@/components/KanbanBoard";
+import { BorderGlow } from "@/components/react-bits/BorderGlow";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
@@ -73,51 +74,72 @@ export default async function GroupBoardPage({ params }: { params: Promise<{ gro
   return (
     <AppShell displayName={currentUser?.name ?? session.user.name ?? "成员"}>
       <div className="grid gap-8">
-      <section className="reveal grid gap-5 xl:grid-cols-[1fr_25rem] xl:items-end">
-        <div>
-          <p className="font-mono text-xs uppercase tracking-[0.18em] text-[var(--accent-strong)]">Shoot Board</p>
-          <h1 className="mt-4 text-5xl font-semibold leading-[0.98] tracking-tight md:text-7xl">{group.name}</h1>
-          <div className="mt-6 flex flex-wrap gap-3 text-sm text-[var(--muted)]">
-            <span>邀请码 {group.inviteCode}</span>
-            <span>{group.members.length} 位成员</span>
-            <span>{group.sessions.length} 个 Session</span>
-          </div>
-        </div>
-        <div className="panel grid gap-4 p-5">
-          <div>
-            <h2 className="text-2xl font-semibold tracking-tight">新的拍摄计划</h2>
-            <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
-              输入标题和详细描述，选择是否用 AI 填充拍摄前工作流。
-            </p>
-          </div>
-          <CreateSessionDialog
-            groupId={group.id}
-            hasLlmConfig={Boolean(group.llmConfig)}
-            skills={skills.map((skill) => ({
-              id: skill.id,
-              name: skill.name,
-              description: skill.description,
-              isDefault: skill.isDefault
-            }))}
-          />
-          <GroupSettingsDialog
-            existingConfig={
-              group.llmConfig
-                ? {
-                    apiKey: group.llmConfig.apiKey,
-                    baseUrl: group.llmConfig.baseUrl,
-                    model: group.llmConfig.model,
-                    temperature: group.llmConfig.temperature,
-                    maxTokens: group.llmConfig.maxTokens
-                  }
-                : null
-            }
-            groupId={group.id}
-            isOwner={isOwner}
-            skills={skills}
-          />
-        </div>
-      </section>
+        <BorderGlow
+          animated
+          className="reveal"
+          backgroundColor="#101218"
+          colors={["#73e6c7", "#f2d18b", "#89a8ff"]}
+          fillOpacity={0.2}
+          glowColor="166 68 68"
+          glowIntensity={0.56}
+        >
+          <section className="grid gap-6 p-5 md:p-6 xl:grid-cols-[1fr_25rem] xl:items-end xl:p-8">
+            <div>
+              <p className="font-mono text-xs uppercase tracking-[0.18em] text-[var(--accent-strong)]">Shoot board</p>
+              <h1 className="mt-5 max-w-[14ch] text-[2.6rem] font-semibold leading-[0.98] tracking-tight md:text-6xl">
+                {group.name}
+              </h1>
+              <div className="mt-7 grid gap-3 sm:grid-cols-3">
+                <div className="studio-metric">
+                  <strong>{group.members.length}</strong>
+                  <span>位成员</span>
+                </div>
+                <div className="studio-metric">
+                  <strong>{group.sessions.length}</strong>
+                  <span>个 Session</span>
+                </div>
+                <div className="studio-metric">
+                  <strong>{group.inviteCode}</strong>
+                  <span>群组邀请码</span>
+                </div>
+              </div>
+            </div>
+            <div className="studio-card grid gap-4 p-5">
+              <div>
+                <h2 className="text-2xl font-semibold tracking-tight">新的拍摄计划</h2>
+                <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
+                  输入标题和详细描述，选择是否用 AI 填充拍摄前工作流。
+                </p>
+              </div>
+              <CreateSessionDialog
+                groupId={group.id}
+                hasLlmConfig={Boolean(group.llmConfig)}
+                skills={skills.map((skill) => ({
+                  id: skill.id,
+                  name: skill.name,
+                  description: skill.description,
+                  isDefault: skill.isDefault
+                }))}
+              />
+              <GroupSettingsDialog
+                existingConfig={
+                  group.llmConfig
+                    ? {
+                        apiKey: group.llmConfig.apiKey,
+                        baseUrl: group.llmConfig.baseUrl,
+                        model: group.llmConfig.model,
+                        temperature: group.llmConfig.temperature,
+                        maxTokens: group.llmConfig.maxTokens
+                      }
+                    : null
+                }
+                groupId={group.id}
+                isOwner={isOwner}
+                skills={skills}
+              />
+            </div>
+          </section>
+        </BorderGlow>
 
       <KanbanBoard groupId={group.id} sessions={group.sessions} />
       </div>
