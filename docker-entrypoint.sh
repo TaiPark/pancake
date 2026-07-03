@@ -11,6 +11,5 @@ if ! find ".next/static/css" -type f -name "*.css" | grep -q .; then
   exit 1
 fi
 
-npx prisma migrate deploy
-npx prisma db seed || true
+./node_modules/.bin/prisma migrate deploy
 node server.js
