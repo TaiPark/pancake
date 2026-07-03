@@ -31,7 +31,6 @@ RUN if ! test -d .next/static/css || ! find .next/static/css -type f -name "*.cs
     fi
 COPY --from=builder /workspace/prisma ./prisma
 COPY --from=builder /workspace/lib ./lib
-COPY --from=builder /workspace/node_modules/.bin/prisma ./node_modules/.bin/prisma
 COPY --from=builder /workspace/node_modules/prisma ./node_modules/prisma
 COPY --from=builder /workspace/node_modules/@prisma ./node_modules/@prisma
 COPY --from=builder /workspace/package.json ./package.json

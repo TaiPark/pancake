@@ -6,6 +6,7 @@ describe("docker runtime image", () => {
     const dockerfile = readFileSync("Dockerfile", "utf8");
 
     expect(dockerfile).not.toContain("COPY --from=builder /workspace/node_modules ./node_modules");
+    expect(dockerfile).not.toContain("COPY --from=builder /workspace/node_modules/.bin/prisma");
     expect(dockerfile).toContain("COPY --from=builder /workspace/node_modules/prisma ./node_modules/prisma");
     expect(dockerfile).toContain("COPY --from=builder /workspace/node_modules/@prisma ./node_modules/@prisma");
   });
@@ -13,7 +14,8 @@ describe("docker runtime image", () => {
   it("does not seed production data on every container start", () => {
     const entrypoint = readFileSync("docker-entrypoint.sh", "utf8");
 
-    expect(entrypoint).toContain("prisma migrate deploy");
+    expect(entrypoint).toContain("node ./node_modules/prisma/build/index.js migrate deploy");
+    expect(entrypoint).not.toContain("./node_modules/.bin/prisma");
     expect(entrypoint).not.toContain("prisma db seed");
   });
 });
