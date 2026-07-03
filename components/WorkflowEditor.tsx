@@ -22,8 +22,8 @@ export function WorkflowEditor({ currentStage, sections, spark, updateAction }: 
   const selectedSection = sections.find((section) => section.stage === selectedStage) ?? sections[0];
 
   return (
-    <div className="grid gap-4">
-      <section className="workflow-rail grid gap-3 md:grid-cols-3">
+    <div className="grid content-start gap-4">
+      <section className="workflow-rail grid items-start gap-3 md:grid-cols-3">
         {sections.map((section, index) => {
           const filled = section.fields.filter((field) => spark[field.name].trim().length > 0).length;
           const selected = section.stage === selectedSection.stage;
