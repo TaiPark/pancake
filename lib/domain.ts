@@ -60,6 +60,29 @@ export type WorkflowSection = {
   fields: WorkflowField[];
 };
 
+export type LlmConfigFormData = {
+  apiKey: string;
+  baseUrl: string;
+  model: string;
+  temperature: number;
+  maxTokens: number;
+};
+
+export type LlmSkillFormData = {
+  name: string;
+  description: string;
+  systemPrompt: string;
+  fieldHints: Record<string, string>;
+  isDefault: boolean;
+};
+
+export type CreateSessionFormData = {
+  title: string;
+  description: string;
+  skillId: string;
+  useAi: boolean;
+};
+
 export const workflowSections: WorkflowSection[] = [
   {
     stage: SessionStage.SPARK,

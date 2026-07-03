@@ -23,7 +23,7 @@ export default async function SessionPage({
   }
 
   const { groupId, sessionId } = await params;
-  const [currentUser, session] = await Promise.all([
+  const [currentUser, session, llmConfig] = await Promise.all([
     prisma.user.findUnique({
       where: { id: authSession.user.id },
       select: { name: true }
@@ -43,6 +43,10 @@ export default async function SessionPage({
         photos: { orderBy: { createdAt: "desc" } },
         updatedBy: { select: { name: true } }
       }
+    }),
+    prisma.llmConfig.findUnique({
+      where: { groupId },
+      select: { id: true }
     })
   ]);
 
@@ -80,10 +84,15 @@ export default async function SessionPage({
 
       <section className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
         <WorkflowEditor
+          sessionId={session.id}
           currentStage={session.stage}
           sections={workflowSections}
           spark={spark}
           updateAction={updateSparkAction.bind(null, session.id)}
+          aiGenerated={session.aiGenerated}
+          aiRawResponse={session.aiRawResponse}
+          hasLlmConfig={Boolean(llmConfig)}
+          description={session.description}
         />
 
         <div className="grid content-start gap-4 xl:sticky xl:top-6">

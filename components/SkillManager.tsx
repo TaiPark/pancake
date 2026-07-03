@@ -1,0 +1,151 @@
+"use client";
+
+import { useMemo, useState, useTransition } from "react";
+import { createPortal } from "react-dom";
+import { createSkillAction, deleteSkillAction, updateSkillAction } from "@/app/actions";
+
+type Skill = {
+  id: string;
+  name: string;
+  description: string;
+  systemPrompt: string;
+  fieldHints: Record<string, string>;
+  isDefault: boolean;
+};
+
+type SkillManagerProps = {
+  groupId: string;
+  skills: Skill[];
+  isOwner: boolean;
+};
+
+const emptySkill: Skill = {
+  id: "",
+  name: "",
+  description: "",
+  systemPrompt: "",
+  fieldHints: {},
+  isDefault: false
+};
+
+export function SkillManager({ groupId, skills, isOwner }: SkillManagerProps) {
+  const [editing, setEditing] = useState<Skill | null>(null);
+  const [error, setError] = useState("");
+  const [pending, startTransition] = useTransition();
+  const fieldHintsText = useMemo(() => JSON.stringify(editing?.fieldHints ?? {}, null, 2), [editing]);
+
+  function submitSkill(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!editing) return;
+    setError("");
+
+    const formData = new FormData(event.currentTarget);
+    startTransition(async () => {
+      const result = editing.id
+        ? await updateSkillAction(editing.id, null, formData)
+        : await createSkillAction(groupId, null, formData);
+      if (result.error) {
+        setError(result.error);
+        return;
+      }
+      setEditing(null);
+    });
+  }
+
+  function removeSkill(skillId: string) {
+    startTransition(async () => {
+      const result = await deleteSkillAction(skillId);
+      if (result.error) {
+        setError(result.error);
+      }
+    });
+  }
+
+  const editor =
+    editing && typeof document !== "undefined" ? (
+      <div className="dialog-overlay" onMouseDown={() => !pending && setEditing(null)}>
+        <form className="dialog-content panel grid gap-4 p-5 md:p-6" onMouseDown={(event) => event.stopPropagation()} onSubmit={submitSkill}>
+          <div>
+            <h3 className="text-2xl font-semibold tracking-tight">{editing.id ? "编辑 Skill" : "新建 Skill"}</h3>
+            <p className="mt-2 text-sm leading-6 text-[var(--muted)]">字段提示必须是 JSON 对象，键名对应 SparkFields 字段。</p>
+          </div>
+          {error ? <p className="rounded-[8px] border border-red-400/30 bg-red-950/30 px-3 py-2 text-sm text-red-100">{error}</p> : null}
+          <label className="grid gap-2 text-sm">
+            名称
+            <input className="field" defaultValue={editing.name} maxLength={50} name="name" required />
+          </label>
+          <label className="grid gap-2 text-sm">
+            描述
+            <input className="field" defaultValue={editing.description} maxLength={200} name="description" />
+          </label>
+          <label className="grid gap-2 text-sm">
+            System Prompt
+            <textarea className="field min-h-32" defaultValue={editing.systemPrompt} maxLength={2000} name="systemPrompt" required />
+          </label>
+          <label className="grid gap-2 text-sm">
+            Field Hints JSON
+            <textarea className="field min-h-36 font-mono text-xs leading-5" defaultValue={fieldHintsText} name="fieldHints" />
+          </label>
+          <label className="flex items-center gap-3 rounded-[8px] border border-white/10 bg-white/[0.03] p-3 text-sm">
+            <input className="h-4 w-4 accent-[var(--accent)]" defaultChecked={editing.isDefault} name="isDefault" type="checkbox" />
+            设为默认 Skill
+          </label>
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <button className="button button-primary flex-1" disabled={pending} type="submit">
+              {pending ? "保存中..." : "保存 Skill"}
+            </button>
+            <button className="button button-secondary" disabled={pending} onClick={() => setEditing(null)} type="button">
+              取消
+            </button>
+          </div>
+        </form>
+      </div>
+    ) : null;
+
+  return (
+    <section className="panel p-5">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h2 className="text-2xl font-semibold tracking-tight">Skill 管理</h2>
+          <p className="mt-2 text-sm leading-6 text-[var(--muted)]">Skill 是 AI 生成拍摄规划时使用的专业提示模板。</p>
+        </div>
+        {isOwner ? (
+          <button className="button button-secondary min-h-10 px-3 text-sm" onClick={() => setEditing(emptySkill)} type="button">
+            新建 Skill
+          </button>
+        ) : null}
+      </div>
+
+      {error ? <p className="mt-4 rounded-[8px] border border-red-400/30 bg-red-950/30 px-3 py-2 text-sm text-red-100">{error}</p> : null}
+
+      <div className="mt-5 grid gap-3">
+        {skills.length === 0 ? <p className="rounded-[8px] border border-dashed border-white/12 p-4 text-sm text-[var(--muted)]">暂无 Skill。</p> : null}
+        {skills.map((skill) => (
+          <article className="rounded-[8px] border border-white/10 bg-white/[0.03] p-4" key={skill.id}>
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <h3 className="font-semibold">{skill.name}</h3>
+                  {skill.isDefault ? <span className="rounded-full border border-[var(--accent)]/30 px-2 py-0.5 text-xs text-[var(--accent-strong)]">默认</span> : null}
+                </div>
+                <p className="mt-2 text-sm leading-6 text-[var(--muted)]">{skill.description || "没有描述"}</p>
+              </div>
+              {isOwner ? (
+                <div className="flex gap-2">
+                  <button className="button button-secondary min-h-9 px-3 text-xs" onClick={() => setEditing(skill)} type="button">
+                    编辑
+                  </button>
+                  <button className="button button-danger min-h-9 px-3 text-xs" disabled={pending} onClick={() => removeSkill(skill.id)} type="button">
+                    删除
+                  </button>
+                </div>
+              ) : null}
+            </div>
+          </article>
+        ))}
+      </div>
+
+      {editor ? createPortal(editor, document.body) : null}
+    </section>
+  );
+}

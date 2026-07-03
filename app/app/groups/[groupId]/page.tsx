@@ -1,9 +1,21 @@
 import { notFound, redirect } from "next/navigation";
-import { createSessionAction } from "@/app/actions";
 import { AppShell } from "@/components/AppShell";
+import { CreateSessionDialog } from "@/components/CreateSessionDialog";
 import { KanbanBoard } from "@/components/KanbanBoard";
+import { LlmConfigPanel } from "@/components/LlmConfigPanel";
+import { SkillManager } from "@/components/SkillManager";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+
+function normalizeFieldHints(value: unknown): Record<string, string> {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return {};
+  }
+
+  return Object.fromEntries(
+    Object.entries(value).filter((entry): entry is [string, string] => typeof entry[1] === "string")
+  );
+}
 
 export default async function GroupBoardPage({ params }: { params: Promise<{ groupId: string }> }) {
   const session = await auth();
@@ -29,6 +41,10 @@ export default async function GroupBoardPage({ params }: { params: Promise<{ gro
           include: { user: { select: { name: true, email: true } } },
           orderBy: { createdAt: "asc" }
         },
+        llmConfig: true,
+        skills: {
+          orderBy: [{ isDefault: "desc" }, { createdAt: "asc" }]
+        },
         sessions: {
           include: {
             photos: { select: { id: true } },
@@ -44,6 +60,17 @@ export default async function GroupBoardPage({ params }: { params: Promise<{ gro
     notFound();
   }
 
+  const currentMembership = group.members.find((member) => member.userId === session.user.id);
+  const isOwner = currentMembership?.role === "OWNER";
+  const skills = group.skills.map((skill) => ({
+    id: skill.id,
+    name: skill.name,
+    description: skill.description,
+    systemPrompt: skill.systemPrompt,
+    fieldHints: normalizeFieldHints(skill.fieldHints),
+    isDefault: skill.isDefault
+  }));
+
   return (
     <AppShell displayName={currentUser?.name ?? session.user.name ?? "成员"}>
       <div className="grid gap-8">
@@ -57,15 +84,43 @@ export default async function GroupBoardPage({ params }: { params: Promise<{ gro
             <span>{group.sessions.length} 个 Session</span>
           </div>
         </div>
-        <form action={createSessionAction.bind(null, group.id)} className="panel grid gap-3 p-5">
-          <label className="grid gap-2 text-sm">
-            新 Session
-            <input className="field" name="title" required minLength={2} />
-          </label>
-          <button className="button button-primary" type="submit">
-            创建 Session
-          </button>
-        </form>
+        <div className="panel grid gap-4 p-5">
+          <div>
+            <h2 className="text-2xl font-semibold tracking-tight">新的拍摄计划</h2>
+            <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
+              输入标题和详细描述，选择是否用 AI 填充拍摄前工作流。
+            </p>
+          </div>
+          <CreateSessionDialog
+            groupId={group.id}
+            hasLlmConfig={Boolean(group.llmConfig)}
+            skills={skills.map((skill) => ({
+              id: skill.id,
+              name: skill.name,
+              description: skill.description,
+              isDefault: skill.isDefault
+            }))}
+          />
+        </div>
+      </section>
+
+      <section className="grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
+        <LlmConfigPanel
+          existingConfig={
+            group.llmConfig
+              ? {
+                  apiKey: group.llmConfig.apiKey,
+                  baseUrl: group.llmConfig.baseUrl,
+                  model: group.llmConfig.model,
+                  temperature: group.llmConfig.temperature,
+                  maxTokens: group.llmConfig.maxTokens
+                }
+              : null
+          }
+          groupId={group.id}
+          isOwner={isOwner}
+        />
+        <SkillManager groupId={group.id} isOwner={isOwner} skills={skills} />
       </section>
 
       <KanbanBoard groupId={group.id} sessions={group.sessions} />

@@ -19,29 +19,31 @@ enum SessionStage {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  name          String
-  email         String    @unique
-  passwordHash  String
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  groupsOwned   Group[]   @relation("GroupOwner")
-  memberships   GroupMember[]
-  updatedSessions Session[] @relation("UpdatedSessions")
-  uploadedPhotos Photo[] @relation("UploadedPhotos")
+  id              String        @id @default(cuid())
+  name            String
+  email           String        @unique
+  passwordHash    String
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  groupsOwned     Group[]       @relation("GroupOwner")
+  memberships     GroupMember[]
+  updatedSessions Session[]     @relation("UpdatedSessions")
+  uploadedPhotos  Photo[]       @relation("UploadedPhotos")
 }
 
 model Group {
-  id         String   @id @default(cuid())
+  id         String        @id @default(cuid())
   name       String
-  slug       String   @unique
-  inviteCode String   @unique
+  slug       String        @unique
+  inviteCode String        @unique
   ownerId    String
-  owner      User     @relation("GroupOwner", fields: [ownerId], references: [id], onDelete: Cascade)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  owner      User          @relation("GroupOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
   members    GroupMember[]
   sessions   Session[]
+  llmConfig  LlmConfig?
+  skills     LlmSkill[]
 }
 
 model GroupMember {
@@ -56,20 +58,57 @@ model GroupMember {
 }
 
 model Session {
-  id           String       @id @default(cuid())
-  groupId      String
-  group        Group        @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  title        String
-  stage        SessionStage @default(SPARK)
-  sparkFields  Json
-  planMarkdown String       @default("")
-  updatedById  String?
-  updatedBy    User?        @relation("UpdatedSessions", fields: [updatedById], references: [id], onDelete: SetNull)
-  photos       Photo[]
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
+  id            String       @id @default(cuid())
+  groupId       String
+  group         Group        @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  title         String
+  description   String       @default("")
+  skillId       String?
+  skill         LlmSkill?    @relation(fields: [skillId], references: [id], onDelete: SetNull)
+  stage         SessionStage @default(SPARK)
+  sparkFields   Json
+  planMarkdown  String       @default("")
+  aiGenerated   Boolean      @default(false)
+  aiRawResponse String       @default("")
+  updatedById   String?
+  updatedBy     User?        @relation("UpdatedSessions", fields: [updatedById], references: [id], onDelete: SetNull)
+  photos        Photo[]
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
 
   @@index([groupId, stage])
+  @@index([skillId])
+}
+
+model LlmConfig {
+  id          String   @id @default(cuid())
+  groupId     String   @unique
+  group       Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  apiKey      String
+  baseUrl     String   @default("https://api.openai.com/v1")
+  model       String   @default("gpt-4o")
+  temperature Float    @default(0.7)
+  maxTokens   Int      @default(4096)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([groupId])
+}
+
+model LlmSkill {
+  id           String    @id @default(cuid())
+  groupId      String
+  group        Group     @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  name         String
+  description  String    @default("")
+  systemPrompt String
+  fieldHints   Json      @default("{}")
+  isDefault    Boolean   @default(false)
+  sessions     Session[]
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([groupId])
 }
 
 model Photo {

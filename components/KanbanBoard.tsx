@@ -7,7 +7,7 @@ import { StageBadge } from "@/components/StageBadge";
 
 const stages: SessionStage[] = [SessionStage.SPARK, SessionStage.PLAN, SessionStage.FEEDBACK];
 
-type BoardSession = Pick<Session, "id" | "title" | "stage" | "updatedAt" | "planMarkdown"> & {
+type BoardSession = Pick<Session, "id" | "title" | "stage" | "updatedAt" | "planMarkdown" | "aiGenerated"> & {
   photos: { id: string }[];
   updatedBy: { name: string } | null;
 };
@@ -44,7 +44,12 @@ export function KanbanBoard({ groupId, sessions }: { groupId: string; sessions: 
                   key={session.id}
                 >
                   <Link href={`/app/groups/${groupId}/sessions/${session.id}`}>
-                    <h3 className="text-lg font-semibold tracking-tight">{session.title}</h3>
+                    <div className="flex flex-wrap items-start justify-between gap-2">
+                      <h3 className="text-lg font-semibold tracking-tight">{session.title}</h3>
+                      {session.aiGenerated ? (
+                        <span className="rounded-full border border-[var(--accent)]/30 px-2 py-0.5 text-xs text-[var(--accent-strong)]">AI</span>
+                      ) : null}
+                    </div>
                     <div className="mt-4 flex flex-wrap gap-3 text-xs text-[var(--muted)]">
                       <span className="inline-flex items-center gap-1">
                         <NotePencil size={14} weight="duotone" />
