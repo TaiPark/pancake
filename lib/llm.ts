@@ -55,6 +55,32 @@ function isTimeoutError(error: unknown): boolean {
   return error.name === "TimeoutError" || error.name === "AbortError" || error.message.toLowerCase().includes("timeout");
 }
 
+function stripHtml(value: string): string {
+  return value
+    .replace(/<script[\s\S]*?<\/script>/gi, " ")
+    .replace(/<style[\s\S]*?<\/style>/gi, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function describeLlmHttpError(status: number, rawText: string, contentType: string): string {
+  const normalizedText = rawText.toLowerCase();
+  if (status === 429 || normalizedText.includes("usage limit") || normalizedText.includes("rate limit")) {
+    return "LLM 服务额度或限流已触发（429）：当前 API Key、账号或上游模型服务已达到用量限制。请更换/充值额度，或稍后重试；也可以临时降低 Max Tokens 后再生成。";
+  }
+
+  if (status === 524) {
+    return "LLM 上游服务响应超时（524）：API 网关已连接到上游，但上游没有在 Cloudflare 超时时间内完成响应。请稍后重试；如果连续出现，请检查 API Base URL/模型服务状态，或降低 Max Tokens 后再试。";
+  }
+
+  const isHtml = contentType.includes("text/html") || /^\s*<!doctype html/i.test(rawText) || /^\s*<html/i.test(rawText);
+  const detail = isHtml ? stripHtml(rawText) : rawText.trim();
+  const clippedDetail = detail.length > 500 ? `${detail.slice(0, 500)}...` : detail;
+
+  return `LLM API 调用失败: ${status}${clippedDetail ? ` ${clippedDetail}` : ""}`;
+}
+
 export function buildUserPrompt(description: string, fieldHints: FieldHints): string {
   const merged = Object.fromEntries(
     Object.entries(defaultHints).map(([field, hint]) => [field, fieldHints[field] ?? hint])
@@ -142,7 +168,7 @@ export async function callLlm(config: LlmCallConfig, systemPrompt: string, userP
 
   if (!response.ok) {
     const errorText = await response.text();
-    throw new Error(`LLM API 调用失败: ${response.status} ${errorText}`);
+    throw new Error(describeLlmHttpError(response.status, errorText, response.headers.get("content-type") ?? ""));
   }
 
   const data = (await response.json()) as { choices?: Array<{ message?: { content?: unknown } }> };

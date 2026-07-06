@@ -79,6 +79,71 @@ describe("llm helpers", () => {
     ).rejects.toThrow("LLM API 调用失败: 401 Unauthorized");
   });
 
+  test("summarizes Cloudflare 524 HTML errors without leaking the whole page", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response("<!DOCTYPE html><title>ikuncode.cc | 524: A timeout occurred</title><h1>A timeout occurred</h1>", {
+        status: 524,
+        headers: { "Content-Type": "text/html" }
+      })
+    );
+
+    await expect(
+      callLlm(
+        {
+          apiKey: "key",
+          baseUrl: "https://api.example.com/v1",
+          model: "example-model",
+          temperature: 0.7,
+          maxTokens: 4096
+        },
+        "system",
+        "user"
+      )
+    ).rejects.toThrow("LLM 上游服务响应超时（524）");
+
+    await expect(
+      callLlm(
+        {
+          apiKey: "key",
+          baseUrl: "https://api.example.com/v1",
+          model: "example-model",
+          temperature: 0.7,
+          maxTokens: 4096
+        },
+        "system",
+        "user"
+      )
+    ).rejects.not.toThrow("<!DOCTYPE html>");
+  });
+
+  test("explains upstream LLM usage-limit responses", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      Response.json(
+        {
+          error: {
+            status_code: 429,
+            message: "The usage limit has been reached"
+          }
+        },
+        { status: 429 }
+      )
+    );
+
+    await expect(
+      callLlm(
+        {
+          apiKey: "key",
+          baseUrl: "https://api.example.com/v1",
+          model: "example-model",
+          temperature: 0.7,
+          maxTokens: 4096
+        },
+        "system",
+        "user"
+      )
+    ).rejects.toThrow("LLM 服务额度或限流已触发（429）");
+  });
+
   test("uses a longer default timeout for full session generation", async () => {
     delete process.env.LLM_TIMEOUT_MS;
     const signal = new AbortController().signal;
