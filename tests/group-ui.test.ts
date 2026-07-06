@@ -41,9 +41,11 @@ describe("group management UI", () => {
   it("keeps session delete actions as icon-only secondary controls", () => {
     const board = readFileSync("components/KanbanBoard.tsx", "utf8");
 
+    expect(board).toContain("session-card-actions");
     expect(board).toContain("aria-label={`删除 ${session.title}`}");
-    expect(board).toContain("button-icon");
-    expect(board).toContain("pendingContent={<Trash size={14} aria-hidden=\"true\" />}");
+    expect(board).toContain("h-6 w-6");
+    expect(board).toContain("pendingContent={<Trash size={12} aria-hidden=\"true\" />}");
+    expect(board).not.toContain("button button-danger button-icon");
     expect(board).not.toContain(">删除<");
   });
 });

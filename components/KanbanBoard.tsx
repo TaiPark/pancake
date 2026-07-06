@@ -44,13 +44,28 @@ export function KanbanBoard({ groupId, sessions }: { groupId: string; sessions: 
                   className="studio-card group p-4 transition duration-200 hover:-translate-y-1 hover:border-[var(--accent)]/50"
                   key={session.id}
                 >
-                  <Link href={`/app/groups/${groupId}/sessions/${session.id}`}>
-                    <div className="flex flex-wrap items-start justify-between gap-2">
+                  <div className="flex items-start justify-between gap-3">
+                    <Link className="min-w-0 flex-1" href={`/app/groups/${groupId}/sessions/${session.id}`}>
                       <h3 className="text-lg font-semibold tracking-tight">{session.title}</h3>
+                    </Link>
+                    <div className="session-card-actions flex shrink-0 items-center gap-1.5">
                       {session.aiGenerated ? (
                         <span className="rounded-full border border-[var(--accent)]/30 px-2 py-0.5 text-xs text-[var(--accent-strong)]">AI</span>
                       ) : null}
+                      <form action={deleteSessionAction.bind(null, session.id)}>
+                        <PendingButton
+                          aria-label={`删除 ${session.title}`}
+                          className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-red-300/25 bg-red-950/20 text-red-100/60 transition hover:border-red-200/45 hover:bg-red-900/35 hover:text-red-100 focus-visible:border-red-200/50 focus-visible:text-red-100"
+                          pendingContent={<Trash size={12} aria-hidden="true" />}
+                          pendingText="删除中..."
+                          title="删除"
+                        >
+                          <Trash size={12} aria-hidden="true" />
+                        </PendingButton>
+                      </form>
                     </div>
+                  </div>
+                  <Link href={`/app/groups/${groupId}/sessions/${session.id}`}>
                     <div className="mt-4 flex flex-wrap gap-3 text-xs text-[var(--muted)]">
                       <span className="inline-flex items-center gap-1">
                         <NotePencil size={14} weight="duotone" />
@@ -77,17 +92,6 @@ export function KanbanBoard({ groupId, sessions }: { groupId: string; sessions: 
                           </PendingButton>
                         </form>
                       ))}
-                    <form action={deleteSessionAction.bind(null, session.id)} className="shrink-0">
-                      <PendingButton
-                        aria-label={`删除 ${session.title}`}
-                        className="button button-danger button-icon opacity-70 transition hover:opacity-100 focus-visible:opacity-100"
-                        pendingContent={<Trash size={14} aria-hidden="true" />}
-                        pendingText="删除中..."
-                        title="删除"
-                      >
-                        <Trash size={14} aria-hidden="true" />
-                      </PendingButton>
-                    </form>
                   </div>
                 </article>
               ))}
