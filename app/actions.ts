@@ -306,7 +306,7 @@ export async function testLlmConfigAction(groupId: string, _state: ActionState |
         maxTokens: 50
       },
       "你是一个测试助手。",
-      "请回复 JSON：{\"message\":\"连接成功\"}。"
+      "请回复 json：{\"message\":\"连接成功\"}。"
     );
     return { ok: true, message: `连接成功，模型：${parsed.data.model}` };
   } catch (error) {

@@ -79,6 +79,29 @@ describe("llm helpers", () => {
     ).rejects.toThrow("LLM API 调用失败: 401 Unauthorized");
   });
 
+  test("adds a lowercase json keyword for strict compatible providers", async () => {
+    const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      Response.json({
+        choices: [{ message: { content: "{\"message\":\"ok\"}" } }]
+      })
+    );
+
+    await callLlm(
+      {
+        apiKey: "key",
+        baseUrl: "https://api.example.com/v1",
+        model: "example-model",
+        temperature: 0.1,
+        maxTokens: 50
+      },
+      "你是一个测试助手。",
+      "请回复 JSON：{\"message\":\"连接成功\"}。"
+    );
+
+    const body = JSON.parse(String(fetchSpy.mock.calls[0]?.[1]?.body)) as { messages: Array<{ content: string }> };
+    expect(body.messages.some((message) => message.content.includes("json"))).toBe(true);
+  });
+
   test("summarizes Cloudflare 524 HTML errors without leaking the whole page", async () => {
     vi.spyOn(globalThis, "fetch").mockResolvedValue(
       new Response("<!DOCTYPE html><title>ikuncode.cc | 524: A timeout occurred</title><h1>A timeout occurred</h1>", {

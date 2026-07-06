@@ -81,6 +81,16 @@ function describeLlmHttpError(status: number, rawText: string, contentType: stri
   return `LLM API 调用失败: ${status}${clippedDetail ? ` ${clippedDetail}` : ""}`;
 }
 
+function ensureLowercaseJsonKeyword(messages: Array<{ role: "system" | "user"; content: string }>) {
+  if (messages.some((message) => message.content.includes("json"))) {
+    return messages;
+  }
+
+  return messages.map((message, index) =>
+    index === messages.length - 1 ? { ...message, content: `${message.content}\n\n请以 json 对象格式回复。` } : message
+  );
+}
+
 export function buildUserPrompt(description: string, fieldHints: FieldHints): string {
   const merged = Object.fromEntries(
     Object.entries(defaultHints).map(([field, hint]) => [field, fieldHints[field] ?? hint])
@@ -141,6 +151,11 @@ export async function callLlm(config: LlmCallConfig, systemPrompt: string, userP
   let response: Response;
 
   try {
+    const messages = ensureLowercaseJsonKeyword([
+      { role: "system", content: systemPrompt },
+      { role: "user", content: userPrompt }
+    ]);
+
     response = await fetch(url, {
       method: "POST",
       headers: {
@@ -151,10 +166,7 @@ export async function callLlm(config: LlmCallConfig, systemPrompt: string, userP
         model: config.model,
         temperature: config.temperature,
         max_tokens: config.maxTokens,
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt }
-        ],
+        messages,
         response_format: { type: "json_object" }
       }),
       signal: AbortSignal.timeout(timeoutMs)
