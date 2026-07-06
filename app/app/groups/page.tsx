@@ -103,7 +103,7 @@ export default async function GroupsPage({ searchParams }: { searchParams: Promi
 
         {groups.map((group) => (
           <article
-            className="panel reveal grid gap-5 p-5 transition duration-200 hover:-translate-y-1 hover:border-[var(--accent)]/50"
+            className="panel reveal relative grid gap-5 p-5 pr-16 transition duration-200 hover:-translate-y-1 hover:border-[var(--accent)]/50"
             key={group.id}
           >
             <Link className="block" href={`/app/groups/${group.id}`}>

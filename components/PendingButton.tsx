@@ -5,11 +5,21 @@ import { useFormStatus } from "react-dom";
 import { ShinyText } from "@/components/react-bits/ShinyText";
 
 type PendingButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
+  pendingContent?: ReactNode;
   pending?: boolean;
   pendingText: ReactNode;
 };
 
-export function PendingButton({ children, className = "", disabled, pending, pendingText, type = "submit", ...props }: PendingButtonProps) {
+export function PendingButton({
+  children,
+  className = "",
+  disabled,
+  pending,
+  pendingContent,
+  pendingText,
+  type = "submit",
+  ...props
+}: PendingButtonProps) {
   const { pending: formPending } = useFormStatus();
   const isPending = pending ?? formPending;
 
@@ -21,7 +31,7 @@ export function PendingButton({ children, className = "", disabled, pending, pen
       type={type}
       {...props}
     >
-      {isPending ? <ShinyText>{pendingText}</ShinyText> : children}
+      {isPending ? pendingContent ?? <ShinyText>{pendingText}</ShinyText> : children}
     </button>
   );
 }

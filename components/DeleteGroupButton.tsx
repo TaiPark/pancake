@@ -30,20 +30,21 @@ export function DeleteGroupButton({ groupId, groupName }: DeleteGroupButtonProps
   }
 
   return (
-    <div className="grid gap-2">
+    <>
       <PendingButton
         aria-label={`删除小组 ${groupName}`}
-        className="button button-danger min-h-9 px-3 text-xs"
+        className="button button-danger button-icon absolute right-4 top-4 z-10 opacity-70 transition hover:opacity-100 focus-visible:opacity-100"
         disabled={pending}
         onClick={deleteGroup}
         pending={pending}
+        pendingContent={<Trash size={15} aria-hidden="true" />}
         pendingText="删除中..."
+        title="删除小组"
         type="button"
       >
-        <Trash size={14} />
-        删除小组
+        <Trash size={15} aria-hidden="true" />
       </PendingButton>
       {error ? <p className="text-xs leading-5 text-red-200">{error}</p> : null}
-    </div>
+    </>
   );
 }

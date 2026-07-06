@@ -408,6 +408,13 @@ a {
   transform: translateY(1px) scale(0.99);
 }
 
+.button-icon {
+  width: 2.25rem;
+  height: 2.25rem;
+  min-height: 2.25rem;
+  padding: 0;
+}
+
 .button-primary {
   border-color: rgb(115 230 199 / 0.85);
   background: #73e6c7;

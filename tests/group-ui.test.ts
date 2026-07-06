@@ -7,10 +7,13 @@ describe("group management UI", () => {
     const deleteButton = readFileSync("components/DeleteGroupButton.tsx", "utf8");
 
     expect(source).toContain("DeleteGroupButton");
-    expect(source).toContain("<article");
+    expect(source).toContain("relative");
     expect(deleteButton).toContain("confirm(");
     expect(deleteButton).toContain("deleteGroupAction");
-    expect(deleteButton).toContain("删除小组");
+    expect(deleteButton).toContain("absolute right-4 top-4");
+    expect(deleteButton).toContain("button-icon");
+    expect(deleteButton).toContain("aria-label={`删除小组 ${groupName}`}");
+    expect(deleteButton).not.toContain(">删除小组<");
   });
 
   it("keeps AI configuration and Skill management behind a settings dialog", () => {
