@@ -17,6 +17,8 @@ export type LlmGenerateResult = {
 
 export type FieldHints = Record<string, string>;
 
+const defaultLlmTimeoutMs = 180000;
+
 const defaultHints: FieldHints = {
   theme: "提炼核心主题，2-4 个关键词",
   mood: "推断拍摄氛围和情绪质感，给出 2-3 个形容词",
@@ -32,6 +34,25 @@ const defaultHints: FieldHints = {
   lightingPlan: "设计适合的灯光方案（自然光/人工光/混合）",
   notes: "列出可能需要注意的问题和未定事项"
 };
+
+export function getLlmTimeoutMs(): number {
+  const rawValue = process.env.LLM_TIMEOUT_MS;
+  const parsed = rawValue ? Number.parseInt(rawValue, 10) : Number.NaN;
+
+  if (Number.isFinite(parsed) && parsed >= 1000) {
+    return parsed;
+  }
+
+  return defaultLlmTimeoutMs;
+}
+
+function isTimeoutError(error: unknown): boolean {
+  if (!(error instanceof Error)) {
+    return false;
+  }
+
+  return error.name === "TimeoutError" || error.name === "AbortError" || error.message.toLowerCase().includes("timeout");
+}
 
 export function buildUserPrompt(description: string, fieldHints: FieldHints): string {
   const merged = Object.fromEntries(
@@ -85,24 +106,34 @@ export function buildSystemPrompt(skillSystemPrompt?: string): string {
 
 export async function callLlm(config: LlmCallConfig, systemPrompt: string, userPrompt: string): Promise<string> {
   const url = `${config.baseUrl.replace(/\/$/, "")}/chat/completions`;
-  const response = await fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${config.apiKey}`
-    },
-    body: JSON.stringify({
-      model: config.model,
-      temperature: config.temperature,
-      max_tokens: config.maxTokens,
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: userPrompt }
-      ],
-      response_format: { type: "json_object" }
-    }),
-    signal: AbortSignal.timeout(60000)
-  });
+  const timeoutMs = getLlmTimeoutMs();
+  let response: Response;
+
+  try {
+    response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${config.apiKey}`
+      },
+      body: JSON.stringify({
+        model: config.model,
+        temperature: config.temperature,
+        max_tokens: config.maxTokens,
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userPrompt }
+        ],
+        response_format: { type: "json_object" }
+      }),
+      signal: AbortSignal.timeout(timeoutMs)
+    });
+  } catch (error) {
+    if (isTimeoutError(error)) {
+      throw new Error(`LLM API 调用超时（${Math.round(timeoutMs / 1000)} 秒），请降低 Max Tokens 或调大 LLM_TIMEOUT_MS。`);
+    }
+    throw error;
+  }
 
   if (!response.ok) {
     const errorText = await response.text();

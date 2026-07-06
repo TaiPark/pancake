@@ -3,8 +3,15 @@ import { defaultSparkFields } from "@/lib/domain";
 import { buildSystemPrompt, buildUserPrompt, callLlm, parseLlmResponse } from "@/lib/llm";
 
 describe("llm helpers", () => {
+  const originalTimeout = process.env.LLM_TIMEOUT_MS;
+
   afterEach(() => {
     vi.restoreAllMocks();
+    if (originalTimeout === undefined) {
+      delete process.env.LLM_TIMEOUT_MS;
+    } else {
+      process.env.LLM_TIMEOUT_MS = originalTimeout;
+    }
   });
 
   test("builds a user prompt with the shoot description and field hints", () => {
@@ -66,5 +73,51 @@ describe("llm helpers", () => {
         "user"
       )
     ).rejects.toThrow("LLM API 调用失败: 401 Unauthorized");
+  });
+
+  test("uses a longer default timeout for full session generation", async () => {
+    delete process.env.LLM_TIMEOUT_MS;
+    const signal = new AbortController().signal;
+    const timeoutSpy = vi.spyOn(AbortSignal, "timeout").mockReturnValue(signal);
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      Response.json({
+        choices: [{ message: { content: "{\"theme\":\"雨夜\"}" } }]
+      })
+    );
+
+    await callLlm(
+      {
+        apiKey: "key",
+        baseUrl: "https://api.example.com/v1",
+        model: "example-model",
+        temperature: 0.7,
+        maxTokens: 4096
+      },
+      "system",
+      "user"
+    );
+
+    expect(timeoutSpy).toHaveBeenCalledWith(180000);
+  });
+
+  test("wraps aborted LLM requests with a clear timeout message", async () => {
+    process.env.LLM_TIMEOUT_MS = "90000";
+    vi.spyOn(globalThis, "fetch").mockRejectedValue(
+      new DOMException("The operation was aborted due to timeout", "TimeoutError")
+    );
+
+    await expect(
+      callLlm(
+        {
+          apiKey: "key",
+          baseUrl: "https://api.example.com/v1",
+          model: "example-model",
+          temperature: 0.7,
+          maxTokens: 4096
+        },
+        "system",
+        "user"
+      )
+    ).rejects.toThrow("LLM API 调用超时（90 秒）");
   });
 });
