@@ -315,6 +315,13 @@ a {
   color: rgb(163 173 185 / 0.72);
 }
 
+.workflow-textarea {
+  min-height: 2.95rem;
+  overflow: hidden;
+  resize: none;
+  white-space: pre-wrap;
+}
+
 .structured-row-list {
   display: grid;
   gap: 0.75rem;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Plus, Trash } from "@phosphor-icons/react";
 import type { WorkflowField } from "@/lib/domain";
 import { getWorkflowFieldFormat, parseWorkflowTable, serializeWorkflowTable } from "@/lib/structured-fields";
@@ -9,6 +9,42 @@ type StructuredWorkflowFieldProps = {
   field: WorkflowField;
   value: string;
 };
+
+function AutoGrowTextarea({
+  name,
+  placeholder,
+  value
+}: {
+  name: string;
+  placeholder: string;
+  value: string;
+}) {
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  function adjustHeight() {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    textarea.style.height = "auto";
+    textarea.style.height = `${textarea.scrollHeight}px`;
+  }
+
+  useEffect(() => {
+    adjustHeight();
+  }, [value]);
+
+  return (
+    <textarea
+      className="field workflow-textarea"
+      defaultValue={value}
+      name={name}
+      onInput={adjustHeight}
+      placeholder={placeholder}
+      ref={textareaRef}
+      rows={1}
+    />
+  );
+}
 
 export function StructuredWorkflowField({ field, value }: StructuredWorkflowFieldProps) {
   const format = getWorkflowFieldFormat(field.name);
@@ -26,11 +62,7 @@ export function StructuredWorkflowField({ field, value }: StructuredWorkflowFiel
     return (
       <label className={`grid gap-2 text-sm ${field.multiline ? "md:col-span-2" : ""}`}>
         {field.label}
-        {field.multiline ? (
-          <textarea className="field min-h-28" name={field.name} defaultValue={value} placeholder={field.placeholder} />
-        ) : (
-          <input className="field" name={field.name} defaultValue={value} placeholder={field.placeholder} />
-        )}
+        <AutoGrowTextarea name={field.name} placeholder={field.placeholder} value={value} />
       </label>
     );
   }

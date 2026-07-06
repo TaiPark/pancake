@@ -14,4 +14,12 @@ describe("workflow editor layout styles", () => {
 
     expect(css).not.toContain(".workflow-card-active::before");
   });
+
+  it("uses auto-growing text areas for regular workflow text fields", () => {
+    const source = readFileSync("components/StructuredWorkflowField.tsx", "utf8");
+
+    expect(source).toContain("AutoGrowTextarea");
+    expect(source).toContain("adjustHeight");
+    expect(source).not.toContain("<input className=\"field\"");
+  });
 });
