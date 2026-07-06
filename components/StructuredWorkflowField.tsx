@@ -57,6 +57,7 @@ export function StructuredWorkflowField({ field, value }: StructuredWorkflowFiel
   }
 
   const groupLabelId = `${field.name}-structured-label`;
+  const gridTemplateColumns = `repeat(${Math.min(tableFormat.columns.length, 4)}, minmax(10rem, 1fr))`;
 
   return (
     <div aria-labelledby={groupLabelId} className="grid gap-3 text-sm md:col-span-2" role="group">
@@ -70,44 +71,36 @@ export function StructuredWorkflowField({ field, value }: StructuredWorkflowFiel
         </button>
       </div>
       <input name={field.name} type="hidden" value={serializeWorkflowTable(rows, tableFormat.columns)} readOnly />
-      <div className="structured-table-wrap">
-        <table className="structured-table">
-          <thead>
-            <tr>
-              {tableFormat.columns.map((column) => (
-                <th key={column.key}>{column.label}</th>
+      <div className="structured-row-list">
+        {rows.map((row, rowIndex) => (
+          <article className="structured-row-card" key={rowIndex}>
+            <div className="flex items-center justify-between gap-3">
+              <span className="font-mono text-xs text-[var(--accent-strong)]">#{String(rowIndex + 1).padStart(2, "0")}</span>
+              <button
+                aria-label={`删除${field.label}第 ${rowIndex + 1} 行`}
+                className="button button-danger min-h-9 px-2"
+                onClick={() => removeRow(rowIndex)}
+                type="button"
+              >
+                <Trash size={14} />
+              </button>
+            </div>
+            <div className="structured-row-grid" style={{ gridTemplateColumns }}>
+              {tableFormat.columns.map((column, columnIndex) => (
+                <label className="structured-cell-field" key={column.key}>
+                  <span>{column.label}</span>
+                  <textarea
+                    aria-label={`${field.label}-${column.label}-${rowIndex + 1}`}
+                    className="structured-cell"
+                    onChange={(event) => updateCell(rowIndex, columnIndex, event.target.value)}
+                    placeholder={column.placeholder}
+                    value={row[columnIndex] ?? ""}
+                  />
+                </label>
               ))}
-              <th aria-label="操作" />
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row, rowIndex) => (
-              <tr key={rowIndex}>
-                {tableFormat.columns.map((column, columnIndex) => (
-                  <td key={column.key}>
-                    <textarea
-                      aria-label={`${field.label}-${column.label}-${rowIndex + 1}`}
-                      className="structured-cell"
-                      onChange={(event) => updateCell(rowIndex, columnIndex, event.target.value)}
-                      placeholder={column.placeholder}
-                      value={row[columnIndex] ?? ""}
-                    />
-                  </td>
-                ))}
-                <td>
-                  <button
-                    aria-label={`删除${field.label}第 ${rowIndex + 1} 行`}
-                    className="button button-danger min-h-9 px-2"
-                    onClick={() => removeRow(rowIndex)}
-                    type="button"
-                  >
-                    <Trash size={14} />
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+            </div>
+          </article>
+        ))}
       </div>
     </div>
   );

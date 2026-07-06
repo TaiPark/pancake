@@ -261,29 +261,57 @@ function parseNumberedShotRows(value: string, columns: WorkflowTableColumn[]): s
     });
 }
 
+function parseQuantityRows(value: string, columns: WorkflowTableColumn[]): string[][] {
+  const normalized = value
+    .replace(/^建议交付[:：]\s*/, "")
+    .replace(/^交付[:：]\s*/, "")
+    .replace(/[，,；;]/g, "\n");
+  const matches = Array.from(normalized.matchAll(/([^\n，,；;。]*?)(\d+\s*[-–—~至到]?\s*\d*\s*张)/g));
+
+  return matches
+    .map((match) => {
+      const label = match[1]
+        .replace(/其中|包括|包含|用于备选|建议/g, "")
+        .replace(/[:：]/g, "")
+        .trim();
+      const count = match[2].replace(/\s+/g, " ").trim();
+
+      return normalizeCells([label || "交付物", "", count, ""], columns);
+    })
+    .filter((row) => row[0].trim() && row[2].trim());
+}
+
 export function parseWorkflowTable(
   value: string,
   columns: WorkflowTableColumn[],
-  minRows = 1,
+  minRowsOrFieldName: number | keyof SparkFields = 1,
   fieldName?: keyof SparkFields
 ): string[][] {
+  const effectiveFieldName = typeof minRowsOrFieldName === "string" ? minRowsOrFieldName : fieldName;
   const markdownRows = parseMarkdownTable(value, columns).filter((row) => row.some((cell) => cell.trim()));
   if (markdownRows.length > 0) {
-    return markdownRows.length >= minRows ? markdownRows : [...markdownRows, ...emptyRows(minRows - markdownRows.length, columns)];
+    return markdownRows;
   }
 
-  if (fieldName === "shotList" && value.trim()) {
+  if (effectiveFieldName === "deliverables" && value.trim()) {
+    const quantityRows = parseQuantityRows(value, columns);
+    if (quantityRows.length > 0) {
+      return quantityRows;
+    }
+  }
+
+  if (effectiveFieldName === "shotList" && value.trim()) {
     const shotRows = parseNumberedShotRows(value, columns);
     if (shotRows.length > 0) {
-      return shotRows.length >= minRows ? shotRows : [...shotRows, ...emptyRows(minRows - shotRows.length, columns)];
+      return shotRows;
     }
   }
 
   if (value.trim()) {
-    return [normalizeCells([value.trim()], columns), ...emptyRows(Math.max(minRows - 1, 0), columns)];
+    return [normalizeCells([value.trim()], columns)];
   }
 
-  return emptyRows(minRows, columns);
+  return emptyRows(1, columns);
 }
 
 function escapeCell(value: string): string {
