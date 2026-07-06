@@ -1,15 +1,14 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { ArrowLeft } from "@phosphor-icons/react/dist/ssr";
-import { updatePlanAction, updateSparkAction } from "@/app/actions";
+import { updateSparkAction } from "@/app/actions";
 import { AppShell } from "@/components/AppShell";
 import { PhotoMasonry } from "@/components/PhotoMasonry";
 import { PhotoUploader } from "@/components/PhotoUploader";
 import { BorderGlow } from "@/components/react-bits/BorderGlow";
 import { WorkflowEditor } from "@/components/WorkflowEditor";
 import { auth } from "@/lib/auth";
-import { defaultPlanMarkdown, parseSparkFields, stageLabel, workflowSections } from "@/lib/domain";
-import { renderMarkdown } from "@/lib/markdown";
+import { parseSparkFields, stageLabel, workflowSections } from "@/lib/domain";
 import { prisma } from "@/lib/prisma";
 import { publicPhotoUrl } from "@/lib/storage";
 
@@ -56,7 +55,6 @@ export default async function SessionPage({
   }
 
   const spark = parseSparkFields(session.sparkFields);
-  const renderedPlan = await renderMarkdown(session.planMarkdown || defaultPlanMarkdown);
   const workflowFields = workflowSections.flatMap((section) => section.fields);
   const completedFields = workflowFields.filter((field) => spark[field.name].trim().length > 0).length;
   const activeSection = workflowSections.find((section) => section.stage === session.stage);
@@ -102,62 +100,40 @@ export default async function SessionPage({
           </section>
         </BorderGlow>
 
-      <section className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
-        <WorkflowEditor
-          sessionId={session.id}
-          currentStage={session.stage}
-          sections={workflowSections}
-          spark={spark}
-          updateAction={updateSparkAction.bind(null, session.id)}
-          aiGenerated={session.aiGenerated}
-          aiRawResponse={session.aiRawResponse}
-          hasLlmConfig={Boolean(llmConfig)}
-          description={session.description}
-        />
+        <section className="grid gap-4">
+          <WorkflowEditor
+            sessionId={session.id}
+            currentStage={session.stage}
+            sections={workflowSections}
+            spark={spark}
+            updateAction={updateSparkAction.bind(null, session.id)}
+            aiGenerated={session.aiGenerated}
+            aiRawResponse={session.aiRawResponse}
+            hasLlmConfig={Boolean(llmConfig)}
+            description={session.description}
+          />
+        </section>
 
-        <div className="grid content-start gap-4 xl:sticky xl:top-6">
-          <form action={updatePlanAction.bind(null, session.id)} className="panel grid gap-4 p-5">
-            <div>
-              <h2 className="text-2xl font-semibold tracking-tight">执行文档</h2>
-              <p className="mt-2 text-sm leading-6 text-[var(--muted)]">自由补充正式通告、分镜脚本和交付说明。</p>
-            </div>
-            <textarea
-              className="field min-h-[24rem] font-mono text-sm leading-6"
-              name="planMarkdown"
-              defaultValue={session.planMarkdown}
-              placeholder={defaultPlanMarkdown}
-            />
-            <button className="button button-primary" type="submit">
-              保存执行文档
-            </button>
-          </form>
-          <article className="panel p-5">
-            <h2 className="mb-4 text-2xl font-semibold tracking-tight">文档预览</h2>
-            <div className="markdown-preview" dangerouslySetInnerHTML={{ __html: renderedPlan }} />
-          </article>
-        </div>
-      </section>
-
-      <section className="grid gap-4 xl:grid-cols-[22rem_1fr]">
-        <div className="grid content-start gap-4">
-          <article className="panel p-5">
-            <h2 className="text-2xl font-semibold tracking-tight">拍摄后作品池</h2>
-            <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
-              上传完成片或样片，配合选片、修图和复盘字段一起沉淀。
-            </p>
-          </article>
-          <PhotoUploader sessionId={session.id} />
-        </div>
-        <PhotoMasonry
-          photos={session.photos.map((photo) => ({
-            id: photo.id,
-            src: publicPhotoUrl(photo.objectKey),
-            width: photo.width,
-            height: photo.height,
-            caption: photo.caption
-          }))}
-        />
-      </section>
+        <section className="grid gap-4 xl:grid-cols-[22rem_1fr]">
+          <div className="grid content-start gap-4">
+            <article className="panel p-5">
+              <h2 className="text-2xl font-semibold tracking-tight">拍摄后作品池</h2>
+              <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
+                上传完成片或样片，配合选片、修图和复盘字段一起沉淀。
+              </p>
+            </article>
+            <PhotoUploader sessionId={session.id} />
+          </div>
+          <PhotoMasonry
+            photos={session.photos.map((photo) => ({
+              id: photo.id,
+              src: publicPhotoUrl(photo.objectKey),
+              width: photo.width,
+              height: photo.height,
+              caption: photo.caption
+            }))}
+          />
+        </section>
       </div>
     </AppShell>
   );
