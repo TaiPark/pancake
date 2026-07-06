@@ -37,4 +37,13 @@ describe("group management UI", () => {
     expect(createDialog).toContain("默认生成模板");
     expect(createDialog).toContain("当前使用默认生成模板");
   });
+
+  it("keeps session delete actions as icon-only secondary controls", () => {
+    const board = readFileSync("components/KanbanBoard.tsx", "utf8");
+
+    expect(board).toContain("aria-label={`删除 ${session.title}`}");
+    expect(board).toContain("button-icon");
+    expect(board).toContain("pendingContent={<Trash size={14} aria-hidden=\"true\" />}");
+    expect(board).not.toContain(">删除<");
+  });
 });

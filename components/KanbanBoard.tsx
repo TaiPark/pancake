@@ -77,10 +77,15 @@ export function KanbanBoard({ groupId, sessions }: { groupId: string; sessions: 
                           </PendingButton>
                         </form>
                       ))}
-                    <form action={deleteSessionAction.bind(null, session.id)}>
-                      <PendingButton className="button button-danger min-h-9 px-2 text-xs" aria-label={`删除 ${session.title}`} pendingText="删除中...">
-                        <Trash size={14} />
-                        删除
+                    <form action={deleteSessionAction.bind(null, session.id)} className="shrink-0">
+                      <PendingButton
+                        aria-label={`删除 ${session.title}`}
+                        className="button button-danger button-icon opacity-70 transition hover:opacity-100 focus-visible:opacity-100"
+                        pendingContent={<Trash size={14} aria-hidden="true" />}
+                        pendingText="删除中..."
+                        title="删除"
+                      >
+                        <Trash size={14} aria-hidden="true" />
                       </PendingButton>
                     </form>
                   </div>
