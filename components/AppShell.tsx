@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { logoutAction } from "@/app/actions";
+import { PendingButton } from "@/components/PendingButton";
 import { APP_NAME, APP_SLOGAN } from "@/lib/brand";
 
 export function AppShell({ children, displayName }: { children: React.ReactNode; displayName?: string | null }) {
@@ -13,9 +14,9 @@ export function AppShell({ children, displayName }: { children: React.ReactNode;
         <div className="flex items-center gap-3 text-sm">
           <span className="hidden text-[var(--muted)] md:block">{displayName}</span>
           <form action={logoutAction}>
-            <button className="button button-secondary min-h-10 px-3" type="submit">
+            <PendingButton className="button button-secondary min-h-10 px-3" pendingText="退出中...">
               退出
-            </button>
+            </PendingButton>
           </form>
         </div>
       </header>

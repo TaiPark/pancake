@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createGroupAction, joinGroupAction } from "@/app/actions";
 import { AppShell } from "@/components/AppShell";
 import { DeleteGroupButton } from "@/components/DeleteGroupButton";
+import { PendingButton } from "@/components/PendingButton";
 import { BorderGlow } from "@/components/react-bits/BorderGlow";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -74,9 +75,9 @@ export default async function GroupsPage({ searchParams }: { searchParams: Promi
                   新群组名称
                   <input className="field" name="name" required minLength={2} />
                 </label>
-                <button className="button button-primary" type="submit">
+                <PendingButton className="button button-primary" pendingText="正在创建群组...">
                   创建群组
-                </button>
+                </PendingButton>
               </form>
               <div className="h-px bg-white/10" />
               <form action={joinGroupAction} className="grid gap-3">
@@ -85,9 +86,9 @@ export default async function GroupsPage({ searchParams }: { searchParams: Promi
                   <input className="field uppercase" name="inviteCode" required minLength={4} />
                 </label>
                 {params.error === "invalid-invite" ? <p className="text-sm text-red-200">邀请码无效。</p> : null}
-                <button className="button button-secondary" type="submit">
+                <PendingButton className="button button-secondary" pendingText="正在加入群组...">
                   加入群组
-                </button>
+                </PendingButton>
               </form>
             </div>
           </section>

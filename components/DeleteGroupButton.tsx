@@ -3,6 +3,7 @@
 import { Trash } from "@phosphor-icons/react";
 import { useState, useTransition } from "react";
 import { deleteGroupAction } from "@/app/actions";
+import { PendingButton } from "@/components/PendingButton";
 
 type DeleteGroupButtonProps = {
   groupId: string;
@@ -30,16 +31,18 @@ export function DeleteGroupButton({ groupId, groupName }: DeleteGroupButtonProps
 
   return (
     <div className="grid gap-2">
-      <button
+      <PendingButton
         aria-label={`删除小组 ${groupName}`}
         className="button button-danger min-h-9 px-3 text-xs"
         disabled={pending}
         onClick={deleteGroup}
+        pending={pending}
+        pendingText="删除中..."
         type="button"
       >
         <Trash size={14} />
-        {pending ? "删除中..." : "删除小组"}
-      </button>
+        删除小组
+      </PendingButton>
       {error ? <p className="text-xs leading-5 text-red-200">{error}</p> : null}
     </div>
   );

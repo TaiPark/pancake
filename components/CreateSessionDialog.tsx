@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { createPortal } from "react-dom";
 import { createSessionWithAiAction } from "@/app/actions";
+import { PendingButton } from "@/components/PendingButton";
 
 type SkillOption = {
   id: string;
@@ -136,9 +137,14 @@ export function CreateSessionDialog({ groupId, skills, hasLlmConfig }: CreateSes
             ) : null}
 
             <div className="flex flex-col gap-3 pt-2 sm:flex-row">
-              <button className="button button-primary flex-1" disabled={pending || !title.trim()} type="submit">
-                {pending ? (useAi ? "正在创建并生成..." : "正在创建...") : useAi ? "创建并 AI 生成" : "创建 Session"}
-              </button>
+              <PendingButton
+                className="button button-primary flex-1"
+                disabled={pending || !title.trim()}
+                pending={pending}
+                pendingText={useAi ? "正在创建并生成..." : "正在创建..."}
+              >
+                {useAi ? "创建并 AI 生成" : "创建 Session"}
+              </PendingButton>
               <button className="button button-secondary" disabled={pending} onClick={() => setOpen(false)} type="button">
                 取消
               </button>

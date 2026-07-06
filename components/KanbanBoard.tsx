@@ -3,6 +3,7 @@ import { ArrowRight, Camera, NotePencil, Trash } from "@phosphor-icons/react/dis
 import { SessionStage, type Session } from "@prisma/client";
 import { deleteSessionAction, updateSessionStageAction } from "@/app/actions";
 import { canMoveSessionStage, stageHint, stageLabel } from "@/lib/domain";
+import { PendingButton } from "@/components/PendingButton";
 import { StageBadge } from "@/components/StageBadge";
 
 const stages: SessionStage[] = [SessionStage.SPARK, SessionStage.PLAN, SessionStage.FEEDBACK];
@@ -70,17 +71,17 @@ export function KanbanBoard({ groupId, sessions }: { groupId: string; sessions: 
                       .filter((target) => target !== session.stage && canMoveSessionStage(session.stage, target))
                       .map((target) => (
                         <form className="min-w-0 flex-1" action={updateSessionStageAction.bind(null, session.id, target)} key={target}>
-                          <button className="button button-secondary min-h-9 w-full px-2 text-xs" type="submit">
+                          <PendingButton className="button button-secondary min-h-9 w-full px-2 text-xs" pendingText={`正在切换到${stageLabel(target)}...`}>
                             {stageLabel(target)}
                             <ArrowRight size={14} />
-                          </button>
+                          </PendingButton>
                         </form>
                       ))}
                     <form action={deleteSessionAction.bind(null, session.id)}>
-                      <button className="button button-danger min-h-9 px-2 text-xs" type="submit" aria-label={`删除 ${session.title}`}>
+                      <PendingButton className="button button-danger min-h-9 px-2 text-xs" aria-label={`删除 ${session.title}`} pendingText="删除中...">
                         <Trash size={14} />
                         删除
-                      </button>
+                      </PendingButton>
                     </form>
                   </div>
                 </article>

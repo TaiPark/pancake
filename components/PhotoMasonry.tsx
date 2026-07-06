@@ -1,9 +1,11 @@
 "use client";
 
+import { useState, useTransition } from "react";
 import Image from "next/image";
 import { Trash } from "@phosphor-icons/react";
 import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
+import { PendingButton } from "@/components/PendingButton";
 
 type Photo = {
   id: string;
@@ -15,10 +17,16 @@ type Photo = {
 
 export function PhotoMasonry({ photos }: { photos: Photo[] }) {
   const router = useRouter();
+  const [deletingPhotoId, setDeletingPhotoId] = useState("");
+  const [pending, startTransition] = useTransition();
 
-  async function deletePhoto(photoId: string) {
-    await fetch(`/api/photos/${photoId}`, { method: "DELETE" });
-    router.refresh();
+  function deletePhoto(photoId: string) {
+    setDeletingPhotoId(photoId);
+    startTransition(async () => {
+      await fetch(`/api/photos/${photoId}`, { method: "DELETE" });
+      setDeletingPhotoId("");
+      router.refresh();
+    });
   }
 
   if (photos.length === 0) {
@@ -50,14 +58,17 @@ export function PhotoMasonry({ photos }: { photos: Photo[] }) {
           />
           <figcaption className="flex items-start justify-between gap-3 p-3 text-sm text-[var(--muted)]">
             <span>{photo.caption || "未添加说明"}</span>
-            <button
+            <PendingButton
               className="button button-danger min-h-9 px-2"
-              type="button"
               aria-label="删除照片"
+              disabled={pending}
               onClick={() => deletePhoto(photo.id)}
+              pending={pending && deletingPhotoId === photo.id}
+              pendingText="删除中..."
+              type="button"
             >
               <Trash size={16} />
-            </button>
+            </PendingButton>
           </figcaption>
         </motion.figure>
       ))}

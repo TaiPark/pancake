@@ -4,6 +4,7 @@ import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { UploadSimple } from "@phosphor-icons/react";
 import { createPhotoUploadAction, registerPhotoAction } from "@/app/actions";
+import { PendingButton } from "@/components/PendingButton";
 
 export function PhotoUploader({ sessionId }: { sessionId: string }) {
   const router = useRouter();
@@ -66,10 +67,10 @@ export function PhotoUploader({ sessionId }: { sessionId: string }) {
         <input className="field" value={caption} onChange={(event) => setCaption(event.target.value)} />
       </label>
       {error ? <p className="text-sm text-red-200">{error}</p> : null}
-      <button className="button button-primary" type="submit" disabled={isPending}>
+      <PendingButton className="button button-primary" disabled={isPending} pending={isPending} pendingText="上传中...">
         <UploadSimple size={18} weight="bold" />
-        {isPending ? "上传中" : "上传照片"}
-      </button>
+        上传照片
+      </PendingButton>
     </form>
   );
 }

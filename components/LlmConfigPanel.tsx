@@ -2,6 +2,7 @@
 
 import { useRef, useState, useTransition } from "react";
 import { deleteLlmConfigAction, saveLlmConfigAction, testLlmConfigAction } from "@/app/actions";
+import { PendingButton } from "@/components/PendingButton";
 
 type LlmConfigPanelProps = {
   groupId: string;
@@ -18,11 +19,13 @@ type LlmConfigPanelProps = {
 };
 
 type Result = { ok?: boolean; error?: string; message?: string } | null;
+type PendingAction = "save" | "test" | "delete" | null;
 
 export function LlmConfigPanel({ groupId, existingConfig, isOwner }: LlmConfigPanelProps) {
   const formRef = useRef<HTMLFormElement>(null);
   const [showKey, setShowKey] = useState(false);
   const [result, setResult] = useState<Result>(null);
+  const [pendingAction, setPendingAction] = useState<PendingAction>(null);
   const [pending, startTransition] = useTransition();
 
   if (!isOwner) {
@@ -39,22 +42,28 @@ export function LlmConfigPanel({ groupId, existingConfig, isOwner }: LlmConfigPa
   function submitConfig(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
+    setPendingAction("save");
     startTransition(async () => {
       setResult(await saveLlmConfigAction(groupId, null, formData));
+      setPendingAction(null);
     });
   }
 
   function testConfig() {
     if (!formRef.current) return;
     const formData = new FormData(formRef.current);
+    setPendingAction("test");
     startTransition(async () => {
       setResult(await testLlmConfigAction(groupId, null, formData));
+      setPendingAction(null);
     });
   }
 
   function deleteConfig() {
+    setPendingAction("delete");
     startTransition(async () => {
       setResult(await deleteLlmConfigAction(groupId));
+      setPendingAction(null);
     });
   }
 
@@ -117,16 +126,30 @@ export function LlmConfigPanel({ groupId, existingConfig, isOwner }: LlmConfigPa
         </div>
 
         <div className="flex flex-wrap gap-3">
-          <button className="button button-primary" disabled={pending} type="submit">
-            {pending ? "处理中..." : "保存配置"}
-          </button>
-          <button className="button button-secondary" disabled={pending} onClick={testConfig} type="button">
+          <PendingButton className="button button-primary" disabled={pending} pending={pending && pendingAction === "save"} pendingText="保存中...">
+            保存配置
+          </PendingButton>
+          <PendingButton
+            className="button button-secondary"
+            disabled={pending}
+            onClick={testConfig}
+            pending={pending && pendingAction === "test"}
+            pendingText="正在测试..."
+            type="button"
+          >
             测试连接
-          </button>
+          </PendingButton>
           {existingConfig ? (
-            <button className="button button-danger" disabled={pending} onClick={deleteConfig} type="button">
+            <PendingButton
+              className="button button-danger"
+              disabled={pending}
+              onClick={deleteConfig}
+              pending={pending && pendingAction === "delete"}
+              pendingText="删除中..."
+              type="button"
+            >
               删除配置
-            </button>
+            </PendingButton>
           ) : null}
         </div>
       </form>

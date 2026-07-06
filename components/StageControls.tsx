@@ -1,6 +1,7 @@
 import { SessionStage } from "@prisma/client";
 import { updateSessionStageAction } from "@/app/actions";
 import { canMoveSessionStage, stageLabel } from "@/lib/domain";
+import { PendingButton } from "@/components/PendingButton";
 import { StageBadge } from "@/components/StageBadge";
 
 const stages: SessionStage[] = [SessionStage.SPARK, SessionStage.PLAN, SessionStage.FEEDBACK];
@@ -15,13 +16,13 @@ export function StageControls({ sessionId, stage }: { sessionId: string; stage: 
       <div className="flex flex-wrap gap-2">
         {stages.map((target) => (
           <form action={updateSessionStageAction.bind(null, sessionId, target)} key={target}>
-            <button
+            <PendingButton
               className={`button min-h-10 px-3 text-sm ${target === stage ? "button-primary" : "button-secondary"}`}
-              type="submit"
               disabled={!canMoveSessionStage(stage, target)}
+              pendingText={`正在切换到${stageLabel(target)}...`}
             >
               {stageLabel(target)}
-            </button>
+            </PendingButton>
           </form>
         ))}
       </div>

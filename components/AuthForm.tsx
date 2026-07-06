@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { motion } from "motion/react";
+import { PendingButton } from "@/components/PendingButton";
 import { APP_NAME } from "@/lib/brand";
 
 type AuthFormProps = {
@@ -126,16 +127,15 @@ export function AuthForm({ mode }: AuthFormProps) {
         </p>
       ) : null}
 
-      <motion.button
-        className="button button-primary"
-        type="submit"
-        disabled={pending}
+      <motion.div
         variants={{ hidden: { opacity: 0, y: 10 }, show: { opacity: 1, y: 0 } }}
         whileHover={{ y: -2 }}
         whileTap={{ y: 1, scale: 0.99 }}
       >
-        {pending ? "处理中" : mode === "login" ? "登录" : "注册并进入"}
-      </motion.button>
+        <PendingButton className="button button-primary w-full" disabled={pending} pending={pending} pendingText="处理中...">
+          {mode === "login" ? "登录" : "注册并进入"}
+        </PendingButton>
+      </motion.div>
 
       <motion.p className="text-sm text-[var(--muted)]" variants={{ hidden: { opacity: 0, y: 10 }, show: { opacity: 1, y: 0 } }}>
         {mode === "login" ? "还没有账号？" : "已经有账号？"}

@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import type { SessionStage } from "@prisma/client";
 import { regenerateSparkFieldsAction } from "@/app/actions";
+import { PendingButton } from "@/components/PendingButton";
 import type { SparkFields, WorkflowSection } from "@/lib/domain";
 
 const stageLabels: Record<SessionStage, string> = {
@@ -104,9 +105,16 @@ export function WorkflowEditor({
                    <span className="text-sm text-[var(--muted)]">当前 SPARK 字段尚未标记为 AI 生成。</span>
                  )}
                  {canRegenerate ? (
-                   <button className="button button-secondary min-h-9 px-3 text-xs" disabled={regenerating} onClick={regenerate} type="button">
-                     {regenerating ? "正在重新生成..." : "重新生成"}
-                   </button>
+                   <PendingButton
+                     className="button button-secondary min-h-9 px-3 text-xs"
+                     disabled={regenerating}
+                     onClick={regenerate}
+                     pending={regenerating}
+                     pendingText="正在重新生成..."
+                     type="button"
+                   >
+                     重新生成
+                   </PendingButton>
                  ) : null}
                  {aiRawResponse ? (
                    <button
@@ -139,9 +147,9 @@ export function WorkflowEditor({
             ))}
           </div>
         </section>
-        <button className="button button-primary justify-self-start" type="submit">
+        <PendingButton className="button button-primary justify-self-start" pendingText={`正在保存${selectedSection.title}...`}>
           保存{selectedSection.title}流程
-        </button>
+        </PendingButton>
       </form>
     </div>
   );

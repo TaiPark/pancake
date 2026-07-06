@@ -3,6 +3,7 @@
 import { useMemo, useState, useTransition } from "react";
 import { createPortal } from "react-dom";
 import { createSkillAction, deleteSkillAction, updateSkillAction } from "@/app/actions";
+import { PendingButton } from "@/components/PendingButton";
 
 type Skill = {
   id: string;
@@ -31,6 +32,7 @@ const emptySkill: Skill = {
 export function SkillManager({ groupId, skills, isOwner }: SkillManagerProps) {
   const [editing, setEditing] = useState<Skill | null>(null);
   const [error, setError] = useState("");
+  const [pendingAction, setPendingAction] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const fieldHintsText = useMemo(() => JSON.stringify(editing?.fieldHints ?? {}, null, 2), [editing]);
 
@@ -40,24 +42,29 @@ export function SkillManager({ groupId, skills, isOwner }: SkillManagerProps) {
     setError("");
 
     const formData = new FormData(event.currentTarget);
+    setPendingAction("save");
     startTransition(async () => {
       const result = editing.id
         ? await updateSkillAction(editing.id, null, formData)
         : await createSkillAction(groupId, null, formData);
       if (result.error) {
         setError(result.error);
+        setPendingAction(null);
         return;
       }
       setEditing(null);
+      setPendingAction(null);
     });
   }
 
   function removeSkill(skillId: string) {
+    setPendingAction(`delete:${skillId}`);
     startTransition(async () => {
       const result = await deleteSkillAction(skillId);
       if (result.error) {
         setError(result.error);
       }
+      setPendingAction(null);
     });
   }
 
@@ -91,9 +98,14 @@ export function SkillManager({ groupId, skills, isOwner }: SkillManagerProps) {
             设为默认 Skill
           </label>
           <div className="flex flex-col gap-3 sm:flex-row">
-            <button className="button button-primary flex-1" disabled={pending} type="submit">
-              {pending ? "保存中..." : "保存 Skill"}
-            </button>
+            <PendingButton
+              className="button button-primary flex-1"
+              disabled={pending}
+              pending={pending && pendingAction === "save"}
+              pendingText="保存中..."
+            >
+              保存 Skill
+            </PendingButton>
             <button className="button button-secondary" disabled={pending} onClick={() => setEditing(null)} type="button">
               取消
             </button>
@@ -139,9 +151,16 @@ export function SkillManager({ groupId, skills, isOwner }: SkillManagerProps) {
                   <button className="button button-secondary min-h-9 px-3 text-xs" onClick={() => setEditing(skill)} type="button">
                     编辑
                   </button>
-                  <button className="button button-danger min-h-9 px-3 text-xs" disabled={pending} onClick={() => removeSkill(skill.id)} type="button">
+                  <PendingButton
+                    className="button button-danger min-h-9 px-3 text-xs"
+                    disabled={pending}
+                    onClick={() => removeSkill(skill.id)}
+                    pending={pending && pendingAction === `delete:${skill.id}`}
+                    pendingText="删除中..."
+                    type="button"
+                  >
                     删除
-                  </button>
+                  </PendingButton>
                 </div>
               ) : null}
             </div>
