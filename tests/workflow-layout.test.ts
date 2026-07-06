@@ -6,7 +6,8 @@ describe("workflow editor layout styles", () => {
     const source = readFileSync("components/WorkflowEditor.tsx", "utf8");
 
     expect(source).toContain('className="grid content-start gap-4"');
-    expect(source).toContain('className="workflow-rail grid items-start gap-3 md:grid-cols-3"');
+    expect(source).toContain('className="workflow-rail grid items-stretch gap-3 md:grid-cols-3"');
+    expect(source).toContain("min-h-48");
   });
 
   it("does not use the broad panel sweep for active stage cards", () => {

@@ -87,4 +87,12 @@ describe("group management UI", () => {
     expect(board).not.toContain("button button-danger button-icon");
     expect(board).not.toContain(">删除<");
   });
+
+  it("shows an explicit details entry on shoot-plan cards", () => {
+    const board = readFileSync("components/KanbanBoard.tsx", "utf8");
+
+    expect(board).toContain("查看策划详情");
+    expect(board).toContain("button button-secondary");
+    expect(board).toContain("ArrowRight");
+  });
 });

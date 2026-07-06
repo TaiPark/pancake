@@ -82,6 +82,10 @@ export function KanbanBoard({ groupId, sessions }: { groupId: string; sessions: 
                   </Link>
 
                   <div className="mt-4 flex flex-wrap gap-2">
+                    <Link className="button button-secondary min-h-9 min-w-0 flex-1 px-2 text-xs" href={`/app/groups/${groupId}/sessions/${session.id}`}>
+                      查看策划详情
+                      <ArrowRight size={14} />
+                    </Link>
                     {stages
                       .filter((target) => target !== session.stage && canMoveSessionStage(session.stage, target))
                       .map((target) => (

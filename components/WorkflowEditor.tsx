@@ -59,14 +59,14 @@ export function WorkflowEditor({
 
   return (
     <div className="grid content-start gap-4">
-      <section className="workflow-rail grid items-start gap-3 md:grid-cols-3">
+      <section className="workflow-rail grid items-stretch gap-3 md:grid-cols-3">
         {sections.map((section, index) => {
           const filled = section.fields.filter((field) => spark[field.name].trim().length > 0).length;
           const selected = section.stage === selectedSection.stage;
 
           return (
             <button
-              className={`workflow-card panel reveal w-full cursor-pointer p-4 text-left text-[var(--text)] ${selected ? "workflow-card-active" : ""}`}
+              className={`workflow-card panel reveal flex min-h-48 w-full cursor-pointer flex-col p-4 text-left text-[var(--text)] ${selected ? "workflow-card-active" : ""}`}
               key={section.stage}
               onClick={() => setSelectedStage(section.stage)}
               style={{ animationDelay: `${index * 70}ms` }}
@@ -78,11 +78,13 @@ export function WorkflowEditor({
                   {filled}/{section.fields.length}
                 </span>
               </div>
-              {section.stage === "SPARK" && aiGenerated ? (
-                <span className="mt-5 inline-flex w-fit rounded-full border border-[var(--accent)]/30 px-2 py-1 text-xs text-[var(--accent-strong)]">
-                  AI 生成
-                </span>
-              ) : null}
+              <div className="mt-5 min-h-7">
+                {section.stage === "SPARK" && aiGenerated ? (
+                  <span className="inline-flex w-fit rounded-full border border-[var(--accent)]/30 px-2 py-1 text-xs text-[var(--accent-strong)]">
+                    AI 生成
+                  </span>
+                ) : null}
+              </div>
               <h2 className="mt-5 text-2xl font-semibold tracking-tight">{section.title}</h2>
               <p className="mt-3 text-sm leading-6 text-[var(--muted)]">{section.summary}</p>
             </button>
