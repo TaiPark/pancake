@@ -33,7 +33,7 @@ export function LlmConfigPanel({ groupId, existingConfig, isOwner }: LlmConfigPa
       <section className="panel p-5">
         <h2 className="text-2xl font-semibold tracking-tight">AI 配置</h2>
         <p className="mt-3 text-sm leading-6 text-[var(--muted)]">
-          {existingConfig ? "群组已配置 LLM，创建 Session 时可以使用 AI 生成。" : "群组尚未配置 LLM，请联系 OWNER 配置。"}
+          {existingConfig ? "群组已配置 AI，创建拍摄计划时可以使用 AI 生成。" : "群组尚未配置 AI，请联系管理员配置。"}
         </p>
       </section>
     );

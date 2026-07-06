@@ -96,7 +96,7 @@ export default async function GroupBoardPage({ params }: { params: Promise<{ gro
                 </div>
                 <div className="studio-metric">
                   <strong>{group.sessions.length}</strong>
-                  <span>个 Session</span>
+                  <span>个拍摄计划</span>
                 </div>
                 <div className="studio-metric">
                   <strong>{group.inviteCode}</strong>

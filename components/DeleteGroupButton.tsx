@@ -15,7 +15,7 @@ export function DeleteGroupButton({ groupId, groupName }: DeleteGroupButtonProps
   const [pending, startTransition] = useTransition();
 
   function deleteGroup() {
-    const confirmed = window.confirm(`确认删除小组「${groupName}」？相关 Session、作品记录、AI 配置和 Skill 都会一起删除。`);
+    const confirmed = window.confirm(`确认删除小组「${groupName}」？相关拍摄计划、作品记录、AI 配置和生成模板都会一起删除。`);
     if (!confirmed) {
       return;
     }

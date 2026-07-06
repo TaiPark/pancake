@@ -35,7 +35,7 @@ export function KanbanBoard({ groupId, sessions }: { groupId: string; sessions: 
             <div className="grid gap-3">
               {columnSessions.length === 0 ? (
                 <div className="studio-card border-dashed p-5 text-sm text-[var(--muted)]">
-                  这里暂时没有 {stageLabel(stage)} 中的 Session。
+                  这里暂时没有 {stageLabel(stage)} 中的拍摄计划。
                 </div>
               ) : null}
 

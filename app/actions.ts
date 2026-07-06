@@ -37,9 +37,9 @@ const llmConfigSchema = z.object({
 });
 
 const skillSchema = z.object({
-  name: z.string().min(1, "Skill 名称不能为空").max(50, "Skill 名称最多 50 个字符"),
+  name: z.string().min(1, "模板名称不能为空").max(50, "模板名称最多 50 个字符"),
   description: z.string().max(200, "描述最多 200 个字符"),
-  systemPrompt: z.string().min(10, "System Prompt 至少 10 个字符").max(2000, "System Prompt 最多 2000 个字符"),
+  systemPrompt: z.string().min(10, "系统提示词至少 10 个字符").max(2000, "系统提示词最多 2000 个字符"),
   fieldHints: z.record(z.string(), z.string()),
   isDefault: z.boolean()
 });
@@ -211,7 +211,7 @@ export async function joinGroupAction(formData: FormData) {
 export async function deleteGroupAction(groupId: string): Promise<ActionState> {
   const userId = await currentUserId();
   if (!(await requireGroupOwner(userId, groupId))) {
-    return { error: "只有群组 OWNER 可以删除小组" };
+    return { error: "只有群组管理员可以删除小组" };
   }
 
   await prisma.group.delete({
@@ -245,7 +245,7 @@ export async function createSessionAction(groupId: string, formData: FormData) {
 export async function saveLlmConfigAction(groupId: string, _state: ActionState | null, formData: FormData): Promise<ActionState> {
   const userId = await currentUserId();
   if (!(await requireGroupOwner(userId, groupId))) {
-    return { error: "只有群组 OWNER 可以配置 LLM" };
+    return { error: "只有群组管理员可以配置 AI" };
   }
 
   const parsed = llmConfigSchema.safeParse({
@@ -256,7 +256,7 @@ export async function saveLlmConfigAction(groupId: string, _state: ActionState |
     maxTokens: formData.get("maxTokens")
   });
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "LLM 配置不完整" };
+    return { error: parsed.error.issues[0]?.message ?? "AI 配置不完整" };
   }
 
   await prisma.llmConfig.upsert({
@@ -269,24 +269,24 @@ export async function saveLlmConfigAction(groupId: string, _state: ActionState |
   });
 
   revalidatePath(`/app/groups/${groupId}`);
-  return { ok: true, message: "LLM 配置已保存" };
+  return { ok: true, message: "AI 配置已保存" };
 }
 
 export async function deleteLlmConfigAction(groupId: string): Promise<ActionState> {
   const userId = await currentUserId();
   if (!(await requireGroupOwner(userId, groupId))) {
-    return { error: "只有群组 OWNER 可以删除 LLM 配置" };
+    return { error: "只有群组管理员可以删除 AI 配置" };
   }
 
   await prisma.llmConfig.deleteMany({ where: { groupId } });
   revalidatePath(`/app/groups/${groupId}`);
-  return { ok: true, message: "LLM 配置已删除" };
+  return { ok: true, message: "AI 配置已删除" };
 }
 
 export async function testLlmConfigAction(groupId: string, _state: ActionState | null, formData: FormData): Promise<ActionState> {
   const userId = await currentUserId();
   if (!(await requireGroupOwner(userId, groupId))) {
-    return { error: "只有群组 OWNER 可以测试 LLM 配置" };
+    return { error: "只有群组管理员可以测试 AI 配置" };
   }
 
   const parsed = llmConfigSchema.pick({ apiKey: true, baseUrl: true, model: true }).safeParse({
@@ -295,7 +295,7 @@ export async function testLlmConfigAction(groupId: string, _state: ActionState |
     model: formData.get("model")
   });
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "LLM 配置不完整" };
+    return { error: parsed.error.issues[0]?.message ?? "AI 配置不完整" };
   }
 
   try {
@@ -317,7 +317,7 @@ export async function testLlmConfigAction(groupId: string, _state: ActionState |
 export async function createSkillAction(groupId: string, _state: ActionState | null, formData: FormData): Promise<ActionState> {
   const userId = await currentUserId();
   if (!(await requireGroupOwner(userId, groupId))) {
-    return { error: "只有群组 OWNER 可以创建 Skill" };
+    return { error: "只有群组管理员可以创建生成模板" };
   }
 
   const fieldHints = parseFieldHintsInput(formData.get("fieldHints"));
@@ -333,7 +333,7 @@ export async function createSkillAction(groupId: string, _state: ActionState | n
     isDefault: formData.get("isDefault") === "on"
   });
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Skill 信息不完整" };
+    return { error: parsed.error.issues[0]?.message ?? "生成模板信息不完整" };
   }
 
   if (parsed.data.isDefault) {
@@ -351,7 +351,7 @@ export async function createSkillAction(groupId: string, _state: ActionState | n
   });
 
   revalidatePath(`/app/groups/${groupId}`);
-  return { ok: true, message: "Skill 已创建" };
+  return { ok: true, message: "生成模板已创建" };
 }
 
 export async function updateSkillAction(skillId: string, _state: ActionState | null, formData: FormData): Promise<ActionState> {
@@ -361,10 +361,10 @@ export async function updateSkillAction(skillId: string, _state: ActionState | n
     select: { groupId: true }
   });
   if (!skill) {
-    return { error: "Skill 不存在" };
+    return { error: "生成模板不存在" };
   }
   if (!(await requireGroupOwner(userId, skill.groupId))) {
-    return { error: "只有群组 OWNER 可以修改 Skill" };
+    return { error: "只有群组管理员可以修改生成模板" };
   }
 
   const fieldHints = parseFieldHintsInput(formData.get("fieldHints"));
@@ -380,7 +380,7 @@ export async function updateSkillAction(skillId: string, _state: ActionState | n
     isDefault: formData.get("isDefault") === "on"
   });
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Skill 信息不完整" };
+    return { error: parsed.error.issues[0]?.message ?? "生成模板信息不完整" };
   }
 
   if (parsed.data.isDefault) {
@@ -396,7 +396,7 @@ export async function updateSkillAction(skillId: string, _state: ActionState | n
   });
 
   revalidatePath(`/app/groups/${skill.groupId}`);
-  return { ok: true, message: "Skill 已更新" };
+  return { ok: true, message: "生成模板已更新" };
 }
 
 export async function deleteSkillAction(skillId: string): Promise<ActionState> {
@@ -406,15 +406,15 @@ export async function deleteSkillAction(skillId: string): Promise<ActionState> {
     select: { groupId: true }
   });
   if (!skill) {
-    return { error: "Skill 不存在" };
+    return { error: "生成模板不存在" };
   }
   if (!(await requireGroupOwner(userId, skill.groupId))) {
-    return { error: "只有群组 OWNER 可以删除 Skill" };
+    return { error: "只有群组管理员可以删除生成模板" };
   }
 
   await prisma.llmSkill.delete({ where: { id: skillId } });
   revalidatePath(`/app/groups/${skill.groupId}`);
-  return { ok: true, message: "Skill 已删除" };
+  return { ok: true, message: "生成模板已删除" };
 }
 
 export async function createSessionWithAiAction(groupId: string, _state: ActionState | null, formData: FormData): Promise<ActionState | void> {
@@ -428,12 +428,12 @@ export async function createSessionWithAiAction(groupId: string, _state: ActionS
     useAi: formData.get("useAi") === "on"
   });
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Session 信息不完整" };
+    return { error: parsed.error.issues[0]?.message ?? "拍摄计划信息不完整" };
   }
 
   const llmConfig = await prisma.llmConfig.findUnique({ where: { groupId } });
   if (parsed.data.useAi && !llmConfig) {
-    return { error: "群组未配置 LLM，请联系群组 OWNER 配置" };
+    return { error: "群组未配置 AI，请联系群组管理员配置" };
   }
 
   let skillSystemPrompt: string | undefined;
@@ -515,17 +515,17 @@ export async function regenerateSparkFieldsAction(sessionId: string): Promise<Ac
     }
   });
   if (!session) {
-    return { error: "Session 不存在" };
+    return { error: "拍摄计划不存在" };
   }
 
   await requireGroupMember(userId, session.groupId);
   if (!session.description.trim()) {
-    return { error: "Session 没有描述内容，无法生成" };
+    return { error: "拍摄计划没有描述内容，无法生成" };
   }
 
   const llmConfig = await prisma.llmConfig.findUnique({ where: { groupId: session.groupId } });
   if (!llmConfig) {
-    return { error: "群组未配置 LLM" };
+    return { error: "群组未配置 AI" };
   }
 
   let skillSystemPrompt: string | undefined;
@@ -571,11 +571,11 @@ export async function regenerateSparkFieldsAction(sessionId: string): Promise<Ac
       }
     });
   } catch (error) {
-    return { error: `LLM 调用失败: ${error instanceof Error ? error.message : "未知错误"}` };
+    return { error: `AI 调用失败: ${error instanceof Error ? error.message : "未知错误"}` };
   }
 
   revalidatePath(`/app/groups/${session.groupId}/sessions/${sessionId}`);
-  return { ok: true, message: "SPARK 字段已重新生成" };
+  return { ok: true, message: "拍摄前内容已重新生成" };
 }
 
 export async function deleteSessionAction(sessionId: string) {

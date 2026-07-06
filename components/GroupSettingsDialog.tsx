@@ -43,7 +43,7 @@ export function GroupSettingsDialog({ groupId, existingConfig, isOwner, skills }
           <div className="flex items-start justify-between gap-4">
             <div>
               <h2 className="text-2xl font-semibold tracking-tight">群组设置</h2>
-              <p className="mt-2 text-sm leading-6 text-[var(--muted)]">管理 AI 配置和生成规划时使用的 Skill。</p>
+              <p className="mt-2 text-sm leading-6 text-[var(--muted)]">管理 AI 配置和生成规划时使用的模板。</p>
             </div>
             <button className="button button-secondary min-h-9 px-3 text-sm" onClick={() => setOpen(false)} type="button">
               <X size={16} />
@@ -53,7 +53,7 @@ export function GroupSettingsDialog({ groupId, existingConfig, isOwner, skills }
 
           {!existingConfig ? (
             <p className="rounded-[8px] border border-[var(--accent)]/25 bg-[var(--accent)]/10 px-3 py-2 text-sm leading-6 text-[var(--accent-strong)]">
-              还没有填写 AI 配置。配置后，创建 Session 时就可以用 AI 生成拍摄前规划。
+              还没有填写 AI 配置。配置后，创建拍摄计划时就可以用 AI 生成拍摄前规划。
             </p>
           ) : null}
 

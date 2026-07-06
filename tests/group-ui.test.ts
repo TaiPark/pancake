@@ -2,6 +2,30 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 describe("group management UI", () => {
+  it("uses user-friendly copy instead of internal planning jargon", () => {
+    const visibleCopyFiles = [
+      "app/app/groups/page.tsx",
+      "app/app/groups/[groupId]/page.tsx",
+      "app/signup/page.tsx",
+      "components/CreateSessionDialog.tsx",
+      "components/KanbanBoard.tsx",
+      "components/WorkflowEditor.tsx",
+      "components/GroupSettingsDialog.tsx",
+      "components/LlmConfigPanel.tsx",
+      "components/SkillManager.tsx"
+    ];
+
+    for (const file of visibleCopyFiles) {
+      const source = readFileSync(file, "utf8");
+      expect(source, file).not.toMatch(
+        /(创建 Session|Session 标题|拍摄 Session|个 Session|Session 看板|群组已配置 LLM|群组尚未配置 LLM|请联系 OWNER|编辑 Skill|新建 Skill|保存 Skill|Skill 管理|Skill 是|未创建自定义 Skill|选择 Skill|SPARK 字段|当前 SPARK)/
+      );
+    }
+
+    const actions = readFileSync("app/actions.ts", "utf8");
+    expect(actions).not.toMatch(/(Session 信息不完整|Session 不存在|Session 没有描述内容|群组未配置 LLM|只有群组 OWNER|Skill 信息不完整)/);
+  });
+
   it("prioritizes existing groups when memberships are present", () => {
     const source = readFileSync("app/app/groups/page.tsx", "utf8");
     const listIndex = source.indexOf('aria-label="已加入的小组"');
@@ -43,11 +67,11 @@ describe("group management UI", () => {
     expect(settings).toContain("群组设置");
   });
 
-  it("communicates default Skill fallback when no custom Skill exists", () => {
+  it("communicates default generation-template fallback when no custom template exists", () => {
     const manager = readFileSync("components/SkillManager.tsx", "utf8");
     const createDialog = readFileSync("components/CreateSessionDialog.tsx", "utf8");
 
-    expect(manager).toContain("未创建自定义 Skill 时");
+    expect(manager).toContain("未创建自定义模板时");
     expect(manager).toContain("默认生成模板");
     expect(createDialog).toContain("默认生成模板");
     expect(createDialog).toContain("当前使用默认生成模板");

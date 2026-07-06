@@ -44,7 +44,7 @@ export default function SignupPage() {
                     <span>邀请码加入</span>
                   </div>
                   <div className="studio-metric">
-                    <strong>Session</strong>
+                    <strong>计划</strong>
                     <span>按拍摄推进</span>
                   </div>
                   <div className="studio-metric">

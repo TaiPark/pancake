@@ -103,7 +103,7 @@ export function WorkflowEditor({
                 {aiGenerated ? (
                   <span className="rounded-full border border-[var(--accent)]/30 px-2 py-1 text-xs text-[var(--accent-strong)]">AI 已生成</span>
                 ) : (
-                  <span className="text-sm text-[var(--muted)]">当前 SPARK 字段尚未标记为 AI 生成。</span>
+                  <span className="text-sm text-[var(--muted)]">当前拍摄前内容尚未标记为 AI 生成。</span>
                 )}
                 {canRegenerate ? (
                   <PendingButton

@@ -55,7 +55,7 @@ export function CreateSessionDialog({ groupId, skills, hasLlmConfig }: CreateSes
         <div className="dialog-content panel p-5 md:p-6" onMouseDown={(event) => event.stopPropagation()}>
           <div className="flex items-start justify-between gap-4">
             <div>
-              <h2 className="text-2xl font-semibold tracking-tight">创建拍摄 Session</h2>
+              <h2 className="text-2xl font-semibold tracking-tight">创建拍摄计划</h2>
               <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
                 写下足够具体的拍摄意图，AI 会据此填充拍摄前工作流。
               </p>
@@ -73,7 +73,7 @@ export function CreateSessionDialog({ groupId, skills, hasLlmConfig }: CreateSes
 
           <form className="mt-5 grid gap-4" onSubmit={onSubmit}>
             <label className="grid gap-2 text-sm">
-              Session 标题
+              拍摄计划标题
               <input
                 className="field"
                 maxLength={100}
@@ -110,13 +110,13 @@ export function CreateSessionDialog({ groupId, skills, hasLlmConfig }: CreateSes
               </label>
             ) : (
               <div className="rounded-[8px] border border-white/10 bg-white/[0.03] p-3 text-sm leading-6 text-[var(--muted)]">
-                群组尚未配置 LLM，创建后需要手动填写 SPARK 字段。
+                群组尚未配置 AI，创建后需要手动填写拍摄前内容。
               </div>
             )}
 
             {useAi && skills.length > 0 ? (
               <label className="grid gap-2 text-sm">
-                选择 Skill
+                选择生成模板
                 <select className="field" name="skillId" onChange={(event) => setSelectedSkillId(event.target.value)} value={selectedSkillId}>
                   <option value="">默认生成模板</option>
                   {skills.map((skill) => (
@@ -132,7 +132,7 @@ export function CreateSessionDialog({ groupId, skills, hasLlmConfig }: CreateSes
 
             {useAi && skills.length === 0 ? (
               <div className="rounded-[8px] border border-white/10 bg-white/[0.03] p-3 text-sm leading-6 text-[var(--muted)]">
-                当前使用默认生成模板。需要更专业的提示时，可在群组设置里新建 Skill。
+                当前使用默认生成模板。需要更专业的提示时，可在群组设置里新建模板。
               </div>
             ) : null}
 
@@ -143,7 +143,7 @@ export function CreateSessionDialog({ groupId, skills, hasLlmConfig }: CreateSes
                 pending={pending}
                 pendingText={useAi ? "正在创建并生成..." : "正在创建..."}
               >
-                {useAi ? "创建并 AI 生成" : "创建 Session"}
+                {useAi ? "创建并 AI 生成" : "创建拍摄计划"}
               </PendingButton>
               <button className="button button-secondary" disabled={pending} onClick={() => setOpen(false)} type="button">
                 取消
@@ -157,7 +157,7 @@ export function CreateSessionDialog({ groupId, skills, hasLlmConfig }: CreateSes
   return (
     <>
       <button className="button button-primary" onClick={() => setOpen(true)} type="button">
-        创建 Session
+        创建拍摄计划
       </button>
 
       {dialog ? createPortal(dialog, document.body) : null}

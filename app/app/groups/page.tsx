@@ -54,7 +54,7 @@ export default async function GroupsPage({ searchParams }: { searchParams: Promi
                 选择创作小组
               </h1>
               <p className="mt-5 max-w-[48ch] leading-7 text-[var(--muted)]">
-                PancakeHub 按群组组织拍摄前准备、现场执行和拍后复盘。每个群组都有自己的 Session 看板。
+                PancakeHub 按群组组织拍摄前准备、现场执行和拍后复盘。每个群组都有自己的拍摄计划看板。
               </p>
               <div className="mt-7 grid gap-3 sm:grid-cols-3">
                 <div className="studio-metric">
@@ -63,7 +63,7 @@ export default async function GroupsPage({ searchParams }: { searchParams: Promi
                 </div>
                 <div className="studio-metric">
                   <strong>{groups.reduce((count, group) => count + group._count.sessions, 0)}</strong>
-                  <span>进行中的 Session</span>
+                  <span>进行中的拍摄计划</span>
                 </div>
                 <div className="studio-metric">
                   <strong>3</strong>
@@ -124,7 +124,7 @@ export default async function GroupsPage({ searchParams }: { searchParams: Promi
               <h2 className="text-2xl font-semibold tracking-tight">{group.name}</h2>
               <p className="mt-5 font-mono text-xs text-[var(--muted)]">邀请码 {group.inviteCode}</p>
               <div className="mt-6 flex gap-5 text-sm text-[var(--muted)]">
-                <span>{group._count.sessions} 个 Session</span>
+                <span>{group._count.sessions} 个拍摄计划</span>
                 <span>{group._count.members} 位成员</span>
               </div>
             </Link>
