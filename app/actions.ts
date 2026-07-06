@@ -48,7 +48,8 @@ const createSessionWithAiSchema = z.object({
   title: z.string().min(1, "标题不能为空").max(100, "标题最多 100 个字符"),
   description: z.string().max(2000, "描述最多 2000 字"),
   skillId: z.string(),
-  useAi: z.boolean()
+  useAi: z.boolean(),
+  expectedShootAt: z.string().max(40).optional()
 });
 
 type ActionState = { ok?: boolean; error?: string; message?: string };
@@ -92,6 +93,21 @@ function parseFieldHintsInput(value: FormDataEntryValue | null): Record<string, 
   } catch {
     return { error: "fieldHints 必须是合法的 JSON" };
   }
+}
+
+function parseExpectedShootAt(value: string | undefined): Date | null | { error: string } {
+  const trimmed = value?.trim();
+  if (!trimmed) {
+    return null;
+  }
+
+  const normalized = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(trimmed) ? `${trimmed}:00+08:00` : trimmed;
+  const date = new Date(normalized);
+  if (Number.isNaN(date.getTime())) {
+    return { error: "预计拍摄时间无效" };
+  }
+
+  return date;
 }
 
 function isActionError(value: Record<string, string> | { error: string }): value is { error: string } {
@@ -425,10 +441,16 @@ export async function createSessionWithAiAction(groupId: string, _state: ActionS
     title: formData.get("title"),
     description: String(formData.get("description") ?? ""),
     skillId: String(formData.get("skillId") ?? ""),
-    useAi: formData.get("useAi") === "on"
+    useAi: formData.get("useAi") === "on",
+    expectedShootAt: String(formData.get("expectedShootAt") ?? "")
   });
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "拍摄计划信息不完整" };
+  }
+
+  const expectedShootAt = parseExpectedShootAt(parsed.data.expectedShootAt);
+  if (expectedShootAt && "error" in expectedShootAt) {
+    return expectedShootAt;
   }
 
   const llmConfig = await prisma.llmConfig.findUnique({ where: { groupId } });
@@ -490,6 +512,7 @@ export async function createSessionWithAiAction(groupId: string, _state: ActionS
       groupId,
       title: parsed.data.title,
       description: parsed.data.description,
+      expectedShootAt,
       skillId: selectedSkillId,
       sparkFields,
       planMarkdown: defaultPlanMarkdown,

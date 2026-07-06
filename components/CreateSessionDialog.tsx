@@ -85,6 +85,11 @@ export function CreateSessionDialog({ groupId, skills, hasLlmConfig }: CreateSes
             </label>
 
             <label className="grid gap-2 text-sm">
+              预计拍摄时间
+              <input className="field" name="expectedShootAt" type="datetime-local" />
+            </label>
+
+            <label className="grid gap-2 text-sm">
               拍摄意图描述
               <textarea
                 className="field min-h-40 resize-y"

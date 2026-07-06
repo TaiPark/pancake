@@ -58,23 +58,24 @@ model GroupMember {
 }
 
 model Session {
-  id            String       @id @default(cuid())
-  groupId       String
-  group         Group        @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  title         String
-  description   String       @default("")
-  skillId       String?
-  skill         LlmSkill?    @relation(fields: [skillId], references: [id], onDelete: SetNull)
-  stage         SessionStage @default(SPARK)
-  sparkFields   Json
-  planMarkdown  String       @default("")
-  aiGenerated   Boolean      @default(false)
-  aiRawResponse String       @default("")
-  updatedById   String?
-  updatedBy     User?        @relation("UpdatedSessions", fields: [updatedById], references: [id], onDelete: SetNull)
-  photos        Photo[]
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
+  id              String       @id @default(cuid())
+  groupId         String
+  group           Group        @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  title           String
+  description     String       @default("")
+  skillId         String?
+  skill           LlmSkill?    @relation(fields: [skillId], references: [id], onDelete: SetNull)
+  stage           SessionStage @default(SPARK)
+  expectedShootAt DateTime?
+  sparkFields     Json
+  planMarkdown    String       @default("")
+  aiGenerated     Boolean      @default(false)
+  aiRawResponse   String       @default("")
+  updatedById     String?
+  updatedBy       User?        @relation("UpdatedSessions", fields: [updatedById], references: [id], onDelete: SetNull)
+  photos          Photo[]
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
 
   @@index([groupId, stage])
   @@index([skillId])

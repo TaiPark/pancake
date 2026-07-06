@@ -143,6 +143,37 @@ export function parseSparkFields(value: unknown): SparkFields {
   ) as SparkFields;
 }
 
+export function extractThemeTags(theme: string, limit = 3): string[] {
+  return theme
+    .split(/[、,，/|｜\n]+/)
+    .map((part) => part.trim())
+    .filter(Boolean)
+    .slice(0, limit);
+}
+
+export function formatExpectedShootTime(value: Date | string | null | undefined): string {
+  if (!value) {
+    return "";
+  }
+
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+
+  const parts = new Intl.DateTimeFormat("zh-CN", {
+    timeZone: "Asia/Shanghai",
+    month: "numeric",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false
+  }).formatToParts(date);
+  const part = (type: string) => parts.find((item) => item.type === type)?.value ?? "";
+
+  return `${part("month")}月${part("day")}日 ${part("hour")}:${part("minute")}`;
+}
+
 export function mergeSparkFields(current: SparkFields, formData: FormData): SparkFields {
   return Object.fromEntries(
     Object.keys(defaultSparkFields).map((key) => {

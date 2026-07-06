@@ -95,4 +95,21 @@ describe("group management UI", () => {
     expect(board).toContain("button button-secondary");
     expect(board).toContain("ArrowRight");
   });
+
+  it("lets users set expected shoot time and surfaces plan context on cards", () => {
+    const createDialog = readFileSync("components/CreateSessionDialog.tsx", "utf8");
+    const board = readFileSync("components/KanbanBoard.tsx", "utf8");
+    const actions = readFileSync("app/actions.ts", "utf8");
+    const schema = readFileSync("prisma/schema.prisma", "utf8");
+
+    expect(createDialog).toContain("预计拍摄时间");
+    expect(createDialog).toContain('name="expectedShootAt"');
+    expect(createDialog).toContain('type="datetime-local"');
+    expect(actions).toContain("expectedShootAt");
+    expect(schema).toContain("expectedShootAt DateTime?");
+    expect(board).toContain("extractThemeTags");
+    expect(board).toContain("formatExpectedShootTime");
+    expect(board).toContain("预计拍摄");
+    expect(board).toContain("shoot-plan-tags");
+  });
 });

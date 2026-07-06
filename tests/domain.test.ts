@@ -3,6 +3,8 @@ import { SessionStage } from "@prisma/client";
 import {
   canMoveSessionStage,
   defaultSparkFields,
+  extractThemeTags,
+  formatExpectedShootTime,
   mergeSparkFields,
   parseSparkFields,
   stageHint,
@@ -32,6 +34,16 @@ describe("session workflow domain rules", () => {
       callSheet: "19:30 集合"
     });
     expect(Object.keys(parsed)).toEqual(Object.keys(defaultSparkFields));
+  });
+
+  test("extracts compact theme tags from shoot theme text", () => {
+    expect(extractThemeTags("明日香、工业废墟 / 黄昏逆光｜白裙")).toEqual(["明日香", "工业废墟", "黄昏逆光"]);
+    expect(extractThemeTags("  ")).toEqual([]);
+  });
+
+  test("formats expected shoot time for board cards", () => {
+    expect(formatExpectedShootTime(new Date("2026-07-08T09:30:00+08:00"))).toBe("7月8日 09:30");
+    expect(formatExpectedShootTime(null)).toBe("");
   });
 
   test("labels stages as the shoot lifecycle", () => {
