@@ -89,7 +89,7 @@ export function StructuredWorkflowField({ field, value }: StructuredWorkflowFiel
   }
 
   const groupLabelId = `${field.name}-structured-label`;
-  const gridTemplateColumns = `repeat(${Math.min(tableFormat.columns.length, 4)}, minmax(10rem, 1fr))`;
+  const gridTemplateColumns = `repeat(${tableFormat.columns.length}, minmax(8.5rem, 1fr))`;
 
   return (
     <div aria-labelledby={groupLabelId} className="grid gap-3 text-sm md:col-span-2" role="group">

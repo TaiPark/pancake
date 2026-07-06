@@ -22,4 +22,14 @@ describe("workflow editor layout styles", () => {
     expect(source).toContain("adjustHeight");
     expect(source).not.toContain("<input className=\"field\"");
   });
+
+  it("keeps every shot-list column on the same desktop row", () => {
+    const source = readFileSync("components/StructuredWorkflowField.tsx", "utf8");
+    const css = readFileSync("app/globals.css", "utf8");
+
+    expect(source).toContain("repeat(${tableFormat.columns.length}, minmax(8.5rem, 1fr))");
+    expect(source).not.toContain("Math.min(tableFormat.columns.length, 4)");
+    expect(css).toContain("overflow-x: auto;");
+    expect(css).toContain("min-width: max-content;");
+  });
 });
