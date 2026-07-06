@@ -52,15 +52,16 @@ describe("session workflow domain rules", () => {
     );
   });
 
-  test("marks operational fields with structured table formats", () => {
+  test("only keeps the shot list as a structured table format", () => {
     const fields = Object.fromEntries(workflowSections.flatMap((section) => section.fields.map((field) => [field.name, field])));
 
     expect(fields.shotList.format).toBe("table");
-    expect(fields.callSheet.format).toBe("table");
-    expect(fields.team.format).toBe("table");
-    expect(fields.gear.format).toBe("table");
-    expect(fields.onsiteChecklist.format).toBe("table");
-    expect(fields.retouching.format).toBe("table");
+    expect(fields.deliverables.format).toBeUndefined();
+    expect(fields.callSheet.format).toBeUndefined();
+    expect(fields.team.format).toBeUndefined();
+    expect(fields.gear.format).toBeUndefined();
+    expect(fields.onsiteChecklist.format).toBeUndefined();
+    expect(fields.retouching.format).toBeUndefined();
   });
 
   test("merges partial workflow form updates without clearing hidden stages", () => {
