@@ -33,6 +33,8 @@ export default async function GroupsPage({ searchParams }: { searchParams: Promi
     })
   ]);
 
+  const hasGroups = groups.length > 0;
+
   return (
     <AppShell displayName={currentUser?.name ?? session.user.name ?? "成员"}>
       <div className="grid gap-8">
@@ -45,11 +47,11 @@ export default async function GroupsPage({ searchParams }: { searchParams: Promi
           glowColor="166 68 68"
           glowIntensity={0.56}
         >
-          <section className="grid gap-6 p-5 md:p-6 lg:grid-cols-[1.08fr_0.92fr] lg:items-end lg:p-8">
+          <section className={`grid gap-6 p-5 md:p-6 lg:p-8 ${hasGroups ? "" : "lg:grid-cols-[1.08fr_0.92fr] lg:items-end"}`}>
             <div>
               <p className="font-mono text-xs uppercase tracking-[0.18em] text-[var(--accent-strong)]">Creative groups</p>
-              <h1 className="mt-5 max-w-[12ch] text-[2.6rem] font-semibold leading-[0.98] tracking-tight md:text-6xl">
-                选择一个创作小组。
+              <h1 className="mt-5 text-[2.6rem] font-semibold leading-[1.02] tracking-tight md:text-5xl">
+                选择创作小组
               </h1>
               <p className="mt-5 max-w-[48ch] leading-7 text-[var(--muted)]">
                 PancakeHub 按群组组织拍摄前准备、现场执行和拍后复盘。每个群组都有自己的 Session 看板。
@@ -69,32 +71,44 @@ export default async function GroupsPage({ searchParams }: { searchParams: Promi
                 </div>
               </div>
             </div>
-            <div className="studio-card grid gap-4 p-5">
-              <form action={createGroupAction} className="grid gap-3">
-                <label className="grid gap-2 text-sm">
-                  新群组名称
-                  <input className="field" name="name" required minLength={2} />
-                </label>
-                <PendingButton className="button button-primary" pendingText="正在创建群组...">
-                  创建群组
-                </PendingButton>
-              </form>
-              <div className="h-px bg-white/10" />
-              <form action={joinGroupAction} className="grid gap-3">
-                <label className="grid gap-2 text-sm">
-                  邀请码
-                  <input className="field uppercase" name="inviteCode" required minLength={4} />
-                </label>
-                {params.error === "invalid-invite" ? <p className="text-sm text-red-200">邀请码无效。</p> : null}
-                <PendingButton className="button button-secondary" pendingText="正在加入群组...">
-                  加入群组
-                </PendingButton>
-              </form>
-            </div>
+            {!hasGroups ? (
+              <div aria-label="开始创建或加入小组" className="studio-card grid gap-4 p-5">
+                <form action={createGroupAction} className="grid gap-3">
+                  <label className="grid gap-2 text-sm">
+                    新群组名称
+                    <input className="field" name="name" required minLength={2} />
+                  </label>
+                  <PendingButton className="button button-primary" pendingText="正在创建群组...">
+                    创建群组
+                  </PendingButton>
+                </form>
+                <div className="h-px bg-white/10" />
+                <form action={joinGroupAction} className="grid gap-3">
+                  <label className="grid gap-2 text-sm">
+                    邀请码
+                    <input className="field uppercase" name="inviteCode" required minLength={4} />
+                  </label>
+                  {params.error === "invalid-invite" ? <p className="text-sm text-red-200">邀请码无效。</p> : null}
+                  <PendingButton className="button button-secondary" pendingText="正在加入群组...">
+                    加入群组
+                  </PendingButton>
+                </form>
+              </div>
+            ) : null}
           </section>
         </BorderGlow>
 
-      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      <section aria-label="已加入的小组" className="grid gap-4">
+        {hasGroups ? (
+          <div className="flex items-end justify-between gap-3">
+            <div>
+              <h2 className="text-xl font-semibold tracking-tight">已有小组</h2>
+              <p className="mt-1 text-sm text-[var(--muted)]">优先进入已有协作空间继续推进拍摄。</p>
+            </div>
+            <span className="font-mono text-sm text-[var(--muted)]">{groups.length}</span>
+          </div>
+        ) : null}
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {groups.length === 0 ? (
           <div className="panel p-8 text-[var(--muted)] md:col-span-2 xl:col-span-3">
             还没有群组。创建一个，或者向朋友要邀请码加入。
@@ -117,7 +131,31 @@ export default async function GroupsPage({ searchParams }: { searchParams: Promi
             {group.ownerId === session.user.id ? <DeleteGroupButton groupId={group.id} groupName={group.name} /> : null}
           </article>
         ))}
+        </div>
       </section>
+      {hasGroups ? (
+        <section aria-label={groups.length > 0 ? "创建或加入小组" : "开始创建或加入小组"} className="studio-card grid gap-4 p-5 md:grid-cols-2">
+          <form action={createGroupAction} className="grid gap-3">
+            <label className="grid gap-2 text-sm">
+              新群组名称
+              <input className="field" name="name" required minLength={2} />
+            </label>
+            <PendingButton className="button button-primary" pendingText="正在创建群组...">
+              创建群组
+            </PendingButton>
+          </form>
+          <form action={joinGroupAction} className="grid gap-3 md:border-l md:border-white/10 md:pl-5">
+            <label className="grid gap-2 text-sm">
+              邀请码
+              <input className="field uppercase" name="inviteCode" required minLength={4} />
+            </label>
+            {params.error === "invalid-invite" ? <p className="text-sm text-red-200">邀请码无效。</p> : null}
+            <PendingButton className="button button-secondary" pendingText="正在加入群组...">
+              加入群组
+            </PendingButton>
+          </form>
+        </section>
+      ) : null}
       </div>
     </AppShell>
   );

@@ -2,6 +2,21 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 describe("group management UI", () => {
+  it("prioritizes existing groups when memberships are present", () => {
+    const source = readFileSync("app/app/groups/page.tsx", "utf8");
+    const listIndex = source.indexOf('aria-label="已加入的小组"');
+    const formIndex = source.indexOf('aria-label={groups.length > 0 ? "创建或加入小组" : "开始创建或加入小组"}');
+
+    expect(source).toContain("选择创作小组");
+    expect(source).not.toContain("选择一个创作小组。");
+    expect(source).toContain("groups.length > 0");
+    expect(source).toContain("已有小组");
+    expect(source).toContain("开始创建或加入小组");
+    expect(listIndex).toBeGreaterThan(-1);
+    expect(formIndex).toBeGreaterThan(-1);
+    expect(listIndex).toBeLessThan(formIndex);
+  });
+
   it("renders group cards with a confirmed delete action outside navigation", () => {
     const source = readFileSync("app/app/groups/page.tsx", "utf8");
     const deleteButton = readFileSync("components/DeleteGroupButton.tsx", "utf8");
