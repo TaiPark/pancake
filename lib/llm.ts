@@ -1,5 +1,6 @@
 import type { SparkFields } from "@/lib/domain";
 import { parseSparkFields } from "@/lib/domain";
+import { getWorkflowFieldAiInstruction } from "@/lib/structured-fields";
 
 export type LlmCallConfig = {
   apiKey: string;
@@ -59,7 +60,10 @@ export function buildUserPrompt(description: string, fieldHints: FieldHints): st
     Object.entries(defaultHints).map(([field, hint]) => [field, fieldHints[field] ?? hint])
   );
   const fieldInstructions = Object.entries(merged)
-    .map(([field, hint]) => `  "${field}": "${hint}"`)
+    .map(([field, hint]) => {
+      const formatInstruction = getWorkflowFieldAiInstruction(field as keyof SparkFields);
+      return `  "${field}": "${hint}${formatInstruction ? `。格式：${formatInstruction}` : ""}"`;
+    })
     .join(",\n");
 
   return `
@@ -79,7 +83,8 @@ ${fieldInstructions}
 2. 每个字段的内容应该具体、可操作，避免笼统的描述
 3. 如果用户描述中某些方面信息不足，基于主题合理推断并补充
 4. 分镜清单（shotList）至少给出 5 个分镜
-5. 所有内容使用中文
+5. 标注为 Markdown 表格的字段必须严格使用指定表头，不要改列名，不要用编号段落替代表格
+6. 所有内容使用中文
 `.trim();
 }
 
@@ -93,7 +98,7 @@ export function buildSystemPrompt(skillSystemPrompt?: string): string {
 
 输出要求：
 - 必须输出合法的 JSON 对象，包含所有指定的字段
-- 每个字段的值是字符串类型
+- 每个字段的值是字符串类型；表格字段的字符串内容使用 Markdown 表格
 - 内容要具体、专业、可操作
 - 使用中文输出`;
 

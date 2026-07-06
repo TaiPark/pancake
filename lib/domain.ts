@@ -51,6 +51,7 @@ export type WorkflowField = {
   label: string;
   placeholder: string;
   multiline?: boolean;
+  format?: "table";
 };
 
 export type WorkflowSection = {
@@ -92,16 +93,16 @@ export const workflowSections: WorkflowSection[] = [
       { name: "theme", label: "主题", placeholder: "例如：雨后便利店人像" },
       { name: "mood", label: "情绪与质感", placeholder: "潮湿、霓虹、低饱和、胶片颗粒" },
       { name: "objective", label: "拍摄目标", placeholder: "这次最终要解决什么表达、练习或交付？", multiline: true },
-      { name: "deliverables", label: "交付规格", placeholder: "例如：9 张精修、16:9 封面、竖版小红书组图" },
-      { name: "location", label: "地点与许可", placeholder: "地址、集合点、备选室内点、是否需要报备" },
-      { name: "callSheet", label: "通告时间", placeholder: "集合、妆造、开拍、转场、收工" },
-      { name: "team", label: "成员分工", placeholder: "摄影、模特、妆造、灯光、后勤、联系人" },
-      { name: "gear", label: "器材与道具", placeholder: "机身、镜头、灯、支架、电池、服装、道具", multiline: true },
-      { name: "styling", label: "服化造", placeholder: "妆面、发型、服装、配色和禁忌", multiline: true },
-      { name: "references", label: "参考资料", placeholder: "图片链接、电影片段、摄影师参考、姿势参考", multiline: true },
-      { name: "shotList", label: "分镜清单", placeholder: "按场景写：景别、动作、构图、情绪、必拍镜头", multiline: true },
-      { name: "lightingPlan", label: "灯光方案", placeholder: "自然光、补光方向、色温、反光板、夜景安全线", multiline: true },
-      { name: "notes", label: "未定问题", placeholder: "还要确认的风险、限制和开放想法", multiline: true }
+      { name: "deliverables", label: "交付规格", placeholder: "精修、封面、组图等交付物", format: "table" },
+      { name: "location", label: "地点与许可", placeholder: "地址、集合点、备选室内点、是否需要报备", format: "table" },
+      { name: "callSheet", label: "通告时间", placeholder: "集合、妆造、开拍、转场、收工", format: "table" },
+      { name: "team", label: "成员分工", placeholder: "摄影、模特、妆造、灯光、后勤、联系人", format: "table" },
+      { name: "gear", label: "器材与道具", placeholder: "机身、镜头、灯、支架、电池、服装、道具", multiline: true, format: "table" },
+      { name: "styling", label: "服化造", placeholder: "妆面、发型、服装、配色和禁忌", multiline: true, format: "table" },
+      { name: "references", label: "参考资料", placeholder: "图片链接、电影片段、摄影师参考、姿势参考", multiline: true, format: "table" },
+      { name: "shotList", label: "分镜清单", placeholder: "按场景写：景别、动作、构图、情绪、必拍镜头", multiline: true, format: "table" },
+      { name: "lightingPlan", label: "灯光方案", placeholder: "自然光、补光方向、色温、反光板、夜景安全线", multiline: true, format: "table" },
+      { name: "notes", label: "未定问题", placeholder: "还要确认的风险、限制和开放想法", multiline: true, format: "table" }
     ]
   },
   {
@@ -109,9 +110,9 @@ export const workflowSections: WorkflowSection[] = [
     title: "拍摄中",
     summary: "现场按检查清单推进，记录变化、补拍项和备份状态。",
     fields: [
-      { name: "onsiteChecklist", label: "现场检查", placeholder: "到场确认：光线、机位、妆造、道具、安全、授权", multiline: true },
-      { name: "liveNotes", label: "现场记录", placeholder: "临时改动、好用角度、情绪反馈、需要回补的镜头", multiline: true },
-      { name: "backupPlan", label: "备份与收尾", placeholder: "卡1/卡2、云盘、文件命名、收工前确认项", multiline: true }
+      { name: "onsiteChecklist", label: "现场检查", placeholder: "到场确认：光线、机位、妆造、道具、安全、授权", multiline: true, format: "table" },
+      { name: "liveNotes", label: "现场记录", placeholder: "临时改动、好用角度、情绪反馈、需要回补的镜头", multiline: true, format: "table" },
+      { name: "backupPlan", label: "备份与收尾", placeholder: "卡1/卡2、云盘、文件命名、收工前确认项", multiline: true, format: "table" }
     ]
   },
   {
@@ -119,10 +120,10 @@ export const workflowSections: WorkflowSection[] = [
     title: "拍摄后",
     summary: "完成选片、修图、发布和复盘，让下一次拍摄更顺。",
     fields: [
-      { name: "selects", label: "选片记录", placeholder: "入选、待定、废片原因、需要二次讨论的照片", multiline: true },
-      { name: "retouching", label: "修图要求", placeholder: "肤色、色调、裁切、交付尺寸、禁修点", multiline: true },
-      { name: "publishing", label: "发布计划", placeholder: "平台、文案、署名、发布时间、授权范围", multiline: true },
-      { name: "retrospective", label: "复盘", placeholder: "现场哪里顺、哪里卡、下次要提前准备什么", multiline: true }
+      { name: "selects", label: "选片记录", placeholder: "入选、待定、废片原因、需要二次讨论的照片", multiline: true, format: "table" },
+      { name: "retouching", label: "修图要求", placeholder: "肤色、色调、裁切、交付尺寸、禁修点", multiline: true, format: "table" },
+      { name: "publishing", label: "发布计划", placeholder: "平台、文案、署名、发布时间、授权范围", multiline: true, format: "table" },
+      { name: "retrospective", label: "复盘", placeholder: "现场哪里顺、哪里卡、下次要提前准备什么", multiline: true, format: "table" }
     ]
   }
 ];

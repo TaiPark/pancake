@@ -22,7 +22,9 @@ describe("llm helpers", () => {
 
     expect(prompt).toContain("秋天公园的人像");
     expect(prompt).toContain('"theme"');
-    expect(prompt).toContain('"shotList": "生成 6 个带人物姿态的分镜"');
+    expect(prompt).toContain('"shotList": "生成 6 个带人物姿态的分镜');
+    expect(prompt).toContain("| 镜头 | 景别/构图 | 动作/情绪 | 镜头参数 | 备注 |");
+    expect(prompt).toContain("表头固定");
     expect(prompt).toContain("必须输出合法的 JSON");
     expect(prompt).not.toContain("onsiteChecklist");
     expect(prompt).not.toContain("retrospective");

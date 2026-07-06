@@ -52,6 +52,17 @@ describe("session workflow domain rules", () => {
     );
   });
 
+  test("marks operational fields with structured table formats", () => {
+    const fields = Object.fromEntries(workflowSections.flatMap((section) => section.fields.map((field) => [field.name, field])));
+
+    expect(fields.shotList.format).toBe("table");
+    expect(fields.callSheet.format).toBe("table");
+    expect(fields.team.format).toBe("table");
+    expect(fields.gear.format).toBe("table");
+    expect(fields.onsiteChecklist.format).toBe("table");
+    expect(fields.retouching.format).toBe("table");
+  });
+
   test("merges partial workflow form updates without clearing hidden stages", () => {
     const formData = new FormData();
     formData.set("theme", "新主题");
