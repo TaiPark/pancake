@@ -679,7 +679,7 @@ export async function saveWorkflowStageAction(
   const userId = await currentUserId();
   const session = await prisma.session.findUniqueOrThrow({
     where: { id: sessionId },
-    select: { groupId: true, stage: true, sparkFields: true }
+    select: { groupId: true, stage: true, sparkFields: true, updatedAt: true }
   });
 
   await requireGroupMember(userId, session.groupId);
@@ -692,14 +692,22 @@ export async function saveWorkflowStageAction(
     return { error: "只能按顺序推进相邻阶段" };
   }
 
-  await prisma.session.update({
-    where: { id: sessionId },
+  const result = await prisma.session.updateMany({
+    where: {
+      id: sessionId,
+      stage: session.stage,
+      updatedAt: session.updatedAt
+    },
     data: {
       sparkFields: nextSparkFields,
       stage: targetStage,
       updatedById: userId
     }
   });
+
+  if (result.count === 0) {
+    return { error: "拍摄计划已被其他成员更新，请刷新后重试" };
+  }
 
   revalidatePath(`/app/groups/${session.groupId}`);
   revalidatePath(`/app/groups/${session.groupId}/sessions/${sessionId}`);
