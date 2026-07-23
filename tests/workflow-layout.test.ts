@@ -18,12 +18,16 @@ describe("workflow editor layout styles", () => {
 
   it("keeps stage navigation scrollable and actions sticky on mobile", () => {
     const css = readFileSync("app/globals.css", "utf8");
+    const mobileCss = css.slice(css.indexOf("@media (max-width: 767px)"));
 
     expect(css).toContain(".workflow-action-bar");
     expect(css).toContain("position: sticky");
     expect(css).toContain("overflow-x: auto");
     expect(css).toContain("grid-auto-flow: column");
     expect(css).toContain("scroll-snap-type: x proximity");
+    expect(mobileCss).toContain("flex-direction: column;");
+    expect(mobileCss).toContain(".workflow-action-bar .button");
+    expect(mobileCss).toContain("min-height: 44px;");
   });
 
   it("does not use the broad panel sweep for active stage cards", () => {

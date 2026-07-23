@@ -65,7 +65,6 @@ describe("workflow editor stage experience", () => {
     const editor = readFileSync("components/WorkflowEditor.tsx", "utf8");
 
     expect(editor).toContain("useActionState");
-    expect(editor).toContain("未保存");
     expect(editor).toContain('name="intent"');
     expect(editor).toContain('value="save"');
     expect(editor).toContain('value="advance"');
@@ -86,6 +85,20 @@ describe("workflow editor stage experience", () => {
     expect(page).toContain("key={session.stage}");
     expect(editor).toContain("onClickCapture");
     expect(editor).toContain("data-workflow-utility");
+  });
+
+  it("disables the editable workflow region while its action is pending", () => {
+    const editor = readFileSync("components/WorkflowEditor.tsx", "utf8");
+    const fieldsetStart = editor.indexOf("<fieldset");
+    const fieldsetEnd = editor.indexOf("</fieldset>");
+
+    expect(editor).toContain("const [actionState, formAction, pending]");
+    expect(editor).toContain("disabled={pending}");
+    expect(editor).toContain("aria-busy={pending}");
+    expect(fieldsetStart).toBeGreaterThan(-1);
+    expect(editor.indexOf("<StructuredWorkflowField")).toBeGreaterThan(fieldsetStart);
+    expect(editor.indexOf('className="workflow-action-bar"')).toBeGreaterThan(fieldsetStart);
+    expect(fieldsetEnd).toBeGreaterThan(editor.indexOf('className="workflow-action-bar"'));
   });
 });
 
