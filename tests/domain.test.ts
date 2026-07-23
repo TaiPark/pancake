@@ -6,6 +6,7 @@ import {
   extractThemeTags,
   formatExpectedShootTime,
   mergeSparkFields,
+  nextSessionStage,
   parseSparkFields,
   stageHint,
   stageLabel,
@@ -21,6 +22,12 @@ describe("session workflow domain rules", () => {
     expect(canMoveSessionStage(SessionStage.SPARK, SessionStage.PLAN)).toBe(true);
     expect(canMoveSessionStage(SessionStage.PLAN, SessionStage.FEEDBACK)).toBe(true);
     expect(canMoveSessionStage(SessionStage.FEEDBACK, SessionStage.SPARK)).toBe(false);
+  });
+
+  test("returns the next stage for guided progression", () => {
+    expect(nextSessionStage(SessionStage.SPARK)).toBe(SessionStage.PLAN);
+    expect(nextSessionStage(SessionStage.PLAN)).toBe(SessionStage.FEEDBACK);
+    expect(nextSessionStage(SessionStage.FEEDBACK)).toBeNull();
   });
 
   test("normalizes malformed workflow fields while preserving known text", () => {
