@@ -1,4 +1,5 @@
 import { SessionStage } from "@prisma/client";
+import { readFileSync } from "node:fs";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { defaultSparkFields } from "@/lib/domain";
 
@@ -58,6 +59,35 @@ vi.mock("@/lib/storage", () => ({
 }));
 
 import { saveWorkflowStageAction } from "@/app/actions";
+
+describe("workflow editor stage experience", () => {
+  it("submits save and advance intents with inline action state", () => {
+    const editor = readFileSync("components/WorkflowEditor.tsx", "utf8");
+
+    expect(editor).toContain("useActionState");
+    expect(editor).toContain("未保存");
+    expect(editor).toContain('name="intent"');
+    expect(editor).toContain('value="save"');
+    expect(editor).toContain('value="advance"');
+    expect(editor).toContain("保存并进入");
+  });
+
+  it("distinguishes current-stage work and failed AI generation", () => {
+    const editor = readFileSync("components/WorkflowEditor.tsx", "utf8");
+
+    expect(editor).toContain("当前阶段");
+    expect(editor).toContain("AI 生成失败");
+  });
+
+  it("remounts after advancement and tracks structured row edits as dirty", () => {
+    const editor = readFileSync("components/WorkflowEditor.tsx", "utf8");
+    const page = readFileSync("app/app/groups/[groupId]/sessions/[sessionId]/page.tsx", "utf8");
+
+    expect(page).toContain("key={session.stage}");
+    expect(editor).toContain("onClickCapture");
+    expect(editor).toContain("data-workflow-utility");
+  });
+});
 
 const sessionId = "session-1";
 const groupId = "group-1";

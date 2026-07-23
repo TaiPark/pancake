@@ -2,12 +2,28 @@ import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 
 describe("workflow editor layout styles", () => {
-  it("keeps stage cards compact when adjacent panels are taller", () => {
+  it("uses compact stage navigation instead of tall workflow cards", () => {
     const source = readFileSync("components/WorkflowEditor.tsx", "utf8");
+    const css = readFileSync("app/globals.css", "utf8");
 
     expect(source).toContain('className="grid content-start gap-4"');
-    expect(source).toContain('className="workflow-rail grid items-stretch gap-3 md:grid-cols-3"');
-    expect(source).toContain("min-h-48");
+    expect(source).toContain('className="workflow-stage-nav"');
+    expect(source).toContain("workflow-stage-button");
+    expect(source).not.toContain("min-h-48");
+    expect(css).toContain(".workflow-stage-nav");
+    expect(css).toContain("grid-template-columns: repeat(3, minmax(0, 1fr));");
+    expect(css).toContain(".workflow-stage-button");
+    expect(css).toContain("min-height: 7.5rem;");
+  });
+
+  it("keeps stage navigation scrollable and actions sticky on mobile", () => {
+    const css = readFileSync("app/globals.css", "utf8");
+
+    expect(css).toContain(".workflow-action-bar");
+    expect(css).toContain("position: sticky");
+    expect(css).toContain("overflow-x: auto");
+    expect(css).toContain("grid-auto-flow: column");
+    expect(css).toContain("scroll-snap-type: x proximity");
   });
 
   it("does not use the broad panel sweep for active stage cards", () => {

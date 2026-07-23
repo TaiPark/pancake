@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { ArrowLeft } from "@phosphor-icons/react/dist/ssr";
-import { updateSparkAction } from "@/app/actions";
+import { saveWorkflowStageAction } from "@/app/actions";
 import { AppShell } from "@/components/AppShell";
 import { PhotoMasonry } from "@/components/PhotoMasonry";
 import { PhotoUploader } from "@/components/PhotoUploader";
@@ -102,11 +102,12 @@ export default async function SessionPage({
 
         <section className="grid gap-4">
           <WorkflowEditor
+            key={session.stage}
             sessionId={session.id}
             currentStage={session.stage}
             sections={workflowSections}
             spark={spark}
-            updateAction={updateSparkAction.bind(null, session.id)}
+            saveAction={saveWorkflowStageAction.bind(null, session.id)}
             aiGenerated={session.aiGenerated}
             aiRawResponse={session.aiRawResponse}
             hasLlmConfig={Boolean(llmConfig)}
