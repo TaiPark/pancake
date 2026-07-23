@@ -8,7 +8,15 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { auth, signIn, signOut } from "@/lib/auth";
-import { canMoveSessionStage, defaultPlanMarkdown, defaultSparkFields, mergeSparkFields, parseSparkFields } from "@/lib/domain";
+import {
+  canMoveSessionStage,
+  defaultPlanMarkdown,
+  defaultSparkFields,
+  mergeSparkFields,
+  nextSessionStage,
+  parseSparkFields,
+  stageLabel
+} from "@/lib/domain";
 import { validateRegistrationInvite } from "@/lib/invite";
 import { callLlm, generateSparkFields } from "@/lib/llm";
 import { prisma } from "@/lib/prisma";
@@ -661,6 +669,44 @@ export async function updateSparkAction(sessionId: string, formData: FormData) {
   });
 
   revalidatePath(`/app/groups/${session.groupId}/sessions/${sessionId}`);
+}
+
+export async function saveWorkflowStageAction(
+  sessionId: string,
+  _state: ActionState | null,
+  formData: FormData
+): Promise<ActionState> {
+  const userId = await currentUserId();
+  const session = await prisma.session.findUniqueOrThrow({
+    where: { id: sessionId },
+    select: { groupId: true, stage: true, sparkFields: true }
+  });
+
+  await requireGroupMember(userId, session.groupId);
+
+  const nextSparkFields = mergeSparkFields(parseSparkFields(session.sparkFields), formData);
+  const wantsAdvance = formData.get("intent") === "advance";
+  const targetStage = wantsAdvance ? nextSessionStage(session.stage) : session.stage;
+
+  if (!targetStage || (wantsAdvance && !canMoveSessionStage(session.stage, targetStage))) {
+    return { error: "只能按顺序推进相邻阶段" };
+  }
+
+  await prisma.session.update({
+    where: { id: sessionId },
+    data: {
+      sparkFields: nextSparkFields,
+      stage: targetStage,
+      updatedById: userId
+    }
+  });
+
+  revalidatePath(`/app/groups/${session.groupId}`);
+  revalidatePath(`/app/groups/${session.groupId}/sessions/${sessionId}`);
+  return {
+    ok: true,
+    message: wantsAdvance && targetStage ? `已保存并进入${stageLabel(targetStage)}` : "当前阶段已保存"
+  };
 }
 
 export async function updatePlanAction(sessionId: string, formData: FormData) {
