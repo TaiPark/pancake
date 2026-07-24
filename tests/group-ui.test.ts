@@ -135,4 +135,13 @@ describe("group management UI", () => {
     expect(board).toContain("预计拍摄");
     expect(board).toContain("shoot-plan-tags");
   });
+
+  it("requires a shoot intention when AI generation is enabled", () => {
+    const dialog = readFileSync("components/CreateSessionDialog.tsx", "utf8");
+
+    expect(dialog).toContain("aiDescriptionMissing");
+    expect(dialog).toContain("请先填写拍摄意图");
+    expect(dialog).toContain("required={useAi}");
+    expect(dialog).toContain("创建并生成拍摄前规划");
+  });
 });

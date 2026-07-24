@@ -52,13 +52,23 @@ const skillSchema = z.object({
   isDefault: z.boolean()
 });
 
-const createSessionWithAiSchema = z.object({
-  title: z.string().min(1, "标题不能为空").max(100, "标题最多 100 个字符"),
-  description: z.string().max(2000, "描述最多 2000 字"),
-  skillId: z.string(),
-  useAi: z.boolean(),
-  expectedShootAt: z.string().max(40).optional()
-});
+const createSessionWithAiSchema = z
+  .object({
+    title: z.string().min(1, "标题不能为空").max(100, "标题最多 100 个字符"),
+    description: z.string().max(2000, "描述最多 2000 字"),
+    skillId: z.string(),
+    useAi: z.boolean(),
+    expectedShootAt: z.string().max(40).optional()
+  })
+  .superRefine((data, context) => {
+    if (data.useAi && data.description.trim().length === 0) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["description"],
+        message: "使用 AI 时请填写拍摄意图"
+      });
+    }
+  });
 
 type ActionState = { ok?: boolean; error?: string; message?: string };
 

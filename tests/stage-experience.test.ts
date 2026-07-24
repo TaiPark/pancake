@@ -161,6 +161,19 @@ describe("group board stage experience", () => {
   });
 });
 
+describe("AI-assisted shoot creation", () => {
+  it("validates the AI description on both client and server", () => {
+    const dialog = readFileSync("components/CreateSessionDialog.tsx", "utf8");
+    const actions = readFileSync("app/actions.ts", "utf8");
+
+    expect(dialog).toContain("aiDescriptionMissing");
+    expect(dialog).toContain("required={useAi}");
+    expect(dialog).toContain("创建并生成拍摄前规划");
+    expect(actions).toContain("superRefine");
+    expect(actions).toContain("使用 AI 时请填写拍摄意图");
+  });
+});
+
 describe("deleteSessionAction", () => {
   beforeEach(() => {
     vi.resetAllMocks();
