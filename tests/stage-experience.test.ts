@@ -6,8 +6,12 @@ import { defaultSparkFields } from "@/lib/domain";
 const mocks = vi.hoisted(() => ({
   auth: vi.fn(),
   findUniqueOrThrow: vi.fn(),
+  findUnique: vi.fn(),
+  findLlmConfig: vi.fn(),
+  findLlmSkill: vi.fn(),
   update: vi.fn(),
   updateMany: vi.fn(),
+  generateSparkFields: vi.fn(),
   requireGroupMember: vi.fn(),
   revalidatePath: vi.fn(),
   redirect: vi.fn()
@@ -22,9 +26,16 @@ vi.mock("@/lib/auth", () => ({
 vi.mock("@/lib/prisma", () => ({
   prisma: {
     session: {
+      findUnique: mocks.findUnique,
       findUniqueOrThrow: mocks.findUniqueOrThrow,
       update: mocks.update,
       updateMany: mocks.updateMany
+    },
+    llmConfig: {
+      findUnique: mocks.findLlmConfig
+    },
+    llmSkill: {
+      findFirst: mocks.findLlmSkill
     }
   }
 }));
@@ -51,14 +62,14 @@ vi.mock("@/lib/invite", () => ({
 
 vi.mock("@/lib/llm", () => ({
   callLlm: vi.fn(),
-  generateSparkFields: vi.fn()
+  generateSparkFields: mocks.generateSparkFields
 }));
 
 vi.mock("@/lib/storage", () => ({
   createPhotoUploadUrl: vi.fn()
 }));
 
-import { saveWorkflowStageAction } from "@/app/actions";
+import { regenerateSparkFieldsAction, saveWorkflowStageAction } from "@/app/actions";
 
 describe("workflow editor stage experience", () => {
   it("submits save and advance intents with inline action state", () => {
@@ -93,12 +104,29 @@ describe("workflow editor stage experience", () => {
     const fieldsetEnd = editor.indexOf("</fieldset>");
 
     expect(editor).toContain("const [actionState, formAction, pending]");
-    expect(editor).toContain("disabled={pending}");
-    expect(editor).toContain("aria-busy={pending}");
+    expect(editor).toContain("disabled={interactionPending}");
+    expect(editor).toContain("aria-busy={interactionPending}");
     expect(fieldsetStart).toBeGreaterThan(-1);
     expect(editor.indexOf("<StructuredWorkflowField")).toBeGreaterThan(fieldsetStart);
     expect(editor.indexOf('className="workflow-action-bar"')).toBeGreaterThan(fieldsetStart);
     expect(fieldsetEnd).toBeGreaterThan(editor.indexOf('className="workflow-action-bar"'));
+  });
+
+  it("locks editing and stage navigation during either save or AI regeneration", () => {
+    const editor = readFileSync("components/WorkflowEditor.tsx", "utf8");
+
+    expect(editor).toContain("const interactionPending = pending || regenerating");
+    expect(editor).toContain("disabled={interactionPending}");
+    expect(editor).toContain("aria-busy={interactionPending}");
+  });
+
+  it("synchronizes regular text fields when refreshed server values change", () => {
+    const field = readFileSync("components/StructuredWorkflowField.tsx", "utf8");
+
+    expect(field).toContain("const [draftValue, setDraftValue] = useState(value)");
+    expect(field).toContain("setDraftValue(value)");
+    expect(field).toContain("value={draftValue}");
+    expect(field).not.toContain("defaultValue={value}");
   });
 
   it("styles save errors even when unsaved edits remain", () => {
@@ -106,6 +134,51 @@ describe("workflow editor stage experience", () => {
 
     expect(editor).toContain('className={actionState?.error ? "text-sm text-red-100"');
     expect(editor).not.toContain("!dirty && actionState?.error");
+  });
+});
+
+describe("regenerateSparkFieldsAction", () => {
+  beforeEach(() => {
+    vi.resetAllMocks();
+    mocks.auth.mockResolvedValue({ user: { id: userId } });
+    mocks.requireGroupMember.mockResolvedValue(undefined);
+    mocks.findUnique.mockResolvedValue({
+      id: sessionId,
+      groupId,
+      description: "雨夜街头人像",
+      skillId: null,
+      updatedAt
+    });
+    mocks.findLlmConfig.mockResolvedValue({
+      apiKey: "test-key",
+      baseUrl: "https://example.com/v1",
+      model: "test-model",
+      temperature: 0.7,
+      maxTokens: 2000
+    });
+    mocks.generateSparkFields.mockResolvedValue({
+      sparkFields: { ...defaultSparkFields, theme: "AI 新主题" },
+      rawResponse: "generated"
+    });
+  });
+
+  it("does not overwrite edits saved while AI generation was in flight", async () => {
+    mocks.updateMany.mockResolvedValue({ count: 0 });
+
+    const result = await regenerateSparkFieldsAction(sessionId);
+
+    expect(result).toEqual({ error: "拍摄计划已在生成期间更新，请重试" });
+    expect(mocks.updateMany).toHaveBeenCalledWith({
+      where: { id: sessionId, updatedAt },
+      data: {
+        sparkFields: { ...defaultSparkFields, theme: "AI 新主题" },
+        aiGenerated: true,
+        aiRawResponse: "generated",
+        updatedById: userId
+      }
+    });
+    expect(mocks.update).not.toHaveBeenCalled();
+    expect(mocks.revalidatePath).not.toHaveBeenCalled();
   });
 });
 

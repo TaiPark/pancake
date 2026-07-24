@@ -54,6 +54,7 @@ export function WorkflowEditor({
   const [showRawResponse, setShowRawResponse] = useState(false);
   const [regenerateError, setRegenerateError] = useState("");
   const [regenerating, startRegenerate] = useTransition();
+  const interactionPending = pending || regenerating;
   const selectedSection = sections.find((section) => section.stage === selectedStage) ?? sections[0];
   const nextStage = nextSessionStage(currentStage);
   const canAdvance = canAdvanceWorkflow(selectedStage, currentStage, nextStage);
@@ -113,6 +114,7 @@ export function WorkflowEditor({
             <button
               aria-pressed={selected}
               className={`workflow-stage-button panel reveal flex w-full cursor-pointer flex-col p-4 text-left text-[var(--text)] ${selected ? "workflow-stage-button-active" : ""}`}
+              disabled={interactionPending}
               key={section.stage}
               onClick={() => selectStage(section.stage)}
               style={{ animationDelay: `${index * 70}ms` }}
@@ -151,9 +153,9 @@ export function WorkflowEditor({
         onClickCapture={trackStructuralEdit}
       >
         <fieldset
-          aria-busy={pending}
+          aria-busy={interactionPending}
           className="m-0 grid min-w-0 gap-4 border-0 p-0"
-          disabled={pending}
+          disabled={interactionPending}
         >
           <legend className="sr-only">{selectedSection.title}工作流编辑</legend>
           <section className="panel reveal grid gap-4 p-5 workflow-section-active" key={selectedSection.stage}>

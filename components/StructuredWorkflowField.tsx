@@ -20,6 +20,7 @@ function AutoGrowTextarea({
   value: string;
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [draftValue, setDraftValue] = useState(value);
 
   function adjustHeight() {
     const textarea = textareaRef.current;
@@ -30,18 +31,23 @@ function AutoGrowTextarea({
   }
 
   useEffect(() => {
-    adjustHeight();
+    setDraftValue(value);
   }, [value]);
+
+  useEffect(() => {
+    adjustHeight();
+  }, [draftValue]);
 
   return (
     <textarea
       className="field workflow-textarea"
-      defaultValue={value}
       name={name}
+      onChange={(event) => setDraftValue(event.target.value)}
       onInput={adjustHeight}
       placeholder={placeholder}
       ref={textareaRef}
       rows={1}
+      value={draftValue}
     />
   );
 }

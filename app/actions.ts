@@ -542,7 +542,8 @@ export async function regenerateSparkFieldsAction(sessionId: string): Promise<Ac
       id: true,
       groupId: true,
       description: true,
-      skillId: true
+      skillId: true,
+      updatedAt: true
     }
   });
   if (!session) {
@@ -592,8 +593,8 @@ export async function regenerateSparkFieldsAction(sessionId: string): Promise<Ac
       fieldHints
     );
 
-    await prisma.session.update({
-      where: { id: sessionId },
+    const updateResult = await prisma.session.updateMany({
+      where: { id: sessionId, updatedAt: session.updatedAt },
       data: {
         sparkFields: result.sparkFields,
         aiGenerated: true,
@@ -601,6 +602,9 @@ export async function regenerateSparkFieldsAction(sessionId: string): Promise<Ac
         updatedById: userId
       }
     });
+    if (updateResult.count === 0) {
+      return { error: "拍摄计划已在生成期间更新，请重试" };
+    }
   } catch (error) {
     return { error: `AI 调用失败: ${error instanceof Error ? error.message : "未知错误"}` };
   }
