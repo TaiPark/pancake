@@ -650,27 +650,6 @@ export async function updateSessionStageAction(sessionId: string, targetStage: S
   revalidatePath(`/app/groups/${session.groupId}/sessions/${sessionId}`);
 }
 
-export async function updateSparkAction(sessionId: string, formData: FormData) {
-  const userId = await currentUserId();
-  const session = await prisma.session.findUniqueOrThrow({
-    where: { id: sessionId },
-    select: { groupId: true, sparkFields: true }
-  });
-
-  await requireGroupMember(userId, session.groupId);
-  const nextSparkFields = mergeSparkFields(parseSparkFields(session.sparkFields), formData);
-
-  await prisma.session.update({
-    where: { id: sessionId },
-    data: {
-      sparkFields: nextSparkFields,
-      updatedById: userId
-    }
-  });
-
-  revalidatePath(`/app/groups/${session.groupId}/sessions/${sessionId}`);
-}
-
 export async function saveWorkflowStageAction(
   sessionId: string,
   _state: ActionState | null,
