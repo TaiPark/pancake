@@ -27,8 +27,8 @@ describe("workflow editor state", () => {
     expect(canAdvanceWorkflow(SessionStage.FEEDBACK, SessionStage.FEEDBACK, null)).toBe(false);
   });
 
-  it("prioritizes dirty, failed, successful, and synchronized status text", () => {
-    expect(workflowStatusText(true, { error: "保存失败" })).toBe("有未保存修改");
+  it("keeps unsaved context while prioritizing save errors", () => {
+    expect(workflowStatusText(true, { error: "保存失败" })).toBe("保存失败 · 有未保存修改");
     expect(workflowStatusText(false, { error: "保存失败" })).toBe("保存失败");
     expect(workflowStatusText(false, { ok: true, message: "当前阶段已保存" })).toBe("当前阶段已保存");
     expect(workflowStatusText(false, null)).toBe("已同步");

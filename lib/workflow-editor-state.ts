@@ -23,8 +23,8 @@ export function canAdvanceWorkflow(
 }
 
 export function workflowStatusText(dirty: boolean, actionState: WorkflowActionState): string {
+  if (actionState?.error) return dirty ? `${actionState.error} · 有未保存修改` : actionState.error;
   if (dirty) return "有未保存修改";
-  if (actionState?.error) return actionState.error;
   if (actionState?.message) return actionState.message;
   if (actionState?.ok) return "已保存";
   return "已同步";

@@ -100,6 +100,13 @@ describe("workflow editor stage experience", () => {
     expect(editor.indexOf('className="workflow-action-bar"')).toBeGreaterThan(fieldsetStart);
     expect(fieldsetEnd).toBeGreaterThan(editor.indexOf('className="workflow-action-bar"'));
   });
+
+  it("styles save errors even when unsaved edits remain", () => {
+    const editor = readFileSync("components/WorkflowEditor.tsx", "utf8");
+
+    expect(editor).toContain('className={actionState?.error ? "text-sm text-red-100"');
+    expect(editor).not.toContain("!dirty && actionState?.error");
+  });
 });
 
 const sessionId = "session-1";

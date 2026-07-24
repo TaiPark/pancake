@@ -222,7 +222,7 @@ export function WorkflowEditor({
           <div className="workflow-action-bar">
             <span
               aria-live="polite"
-              className={!dirty && actionState?.error ? "text-sm text-red-100" : "text-sm text-[var(--muted)]"}
+              className={actionState?.error ? "text-sm text-red-100" : "text-sm text-[var(--muted)]"}
             >
               {statusText}
             </span>
