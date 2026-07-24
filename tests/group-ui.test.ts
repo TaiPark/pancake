@@ -67,6 +67,21 @@ describe("group management UI", () => {
     expect(settings).toContain("群组设置");
   });
 
+  it("puts active plans before owner-only settings and supports copying the invite code", () => {
+    const source = readFileSync("app/app/groups/[groupId]/page.tsx", "utf8");
+    const settings = readFileSync("components/GroupSettingsDialog.tsx", "utf8");
+    const invite = readFileSync("components/InviteCodeButton.tsx", "utf8");
+
+    expect(source.indexOf("<KanbanBoard")).toBeLessThan(source.indexOf("<GroupSettingsDialog"));
+    expect(source).toContain("InviteCodeButton");
+    expect(source).toContain("isOwner ? (");
+    expect(source).toContain("继续正在进行的拍摄");
+    expect(settings).not.toContain("isOwner: boolean");
+    expect(invite).toContain("navigator.clipboard.writeText");
+    expect(invite).toContain("复制邀请码");
+    expect(invite).toContain("已复制");
+  });
+
   it("communicates default generation-template fallback when no custom template exists", () => {
     const manager = readFileSync("components/SkillManager.tsx", "utf8");
     const createDialog = readFileSync("components/CreateSessionDialog.tsx", "utf8");
@@ -79,21 +94,29 @@ describe("group management UI", () => {
 
   it("keeps session delete actions as icon-only secondary controls", () => {
     const board = readFileSync("components/KanbanBoard.tsx", "utf8");
+    const deleteButton = readFileSync("components/DeleteSessionButton.tsx", "utf8");
 
     expect(board).toContain("session-card-actions");
-    expect(board).toContain("aria-label={`删除 ${session.title}`}");
-    expect(board).toContain("h-6 w-6");
-    expect(board).toContain("pendingContent={<Trash size={12} aria-hidden=\"true\" />}");
+    expect(board).toContain("DeleteSessionButton");
+    expect(deleteButton).toContain("aria-label={`删除 ${sessionTitle}`}");
+    expect(deleteButton).toContain("h-6 w-6");
+    expect(deleteButton).toContain("pendingContent={<Trash size={12} aria-hidden=\"true\" />}");
+    expect(deleteButton).toContain("window.confirm");
+    expect(deleteButton).toContain("确认删除拍摄计划");
     expect(board).not.toContain("button button-danger button-icon");
     expect(board).not.toContain(">删除<");
   });
 
-  it("shows an explicit details entry on shoot-plan cards", () => {
+  it("makes the current-stage task primary and labels stage transitions", () => {
     const board = readFileSync("components/KanbanBoard.tsx", "utf8");
+    const css = readFileSync("app/globals.css", "utf8");
 
-    expect(board).toContain("查看策划详情");
-    expect(board).toContain("button button-secondary");
+    expect(board).toContain("继续处理");
+    expect(board).toContain("进入${stageLabel(target)}");
     expect(board).toContain("ArrowRight");
+    expect(board).toContain("kanban-column");
+    expect(css).toContain("--mobile-order");
+    expect(board).not.toContain("查看策划详情");
   });
 
   it("lets users set expected shoot time and surfaces plan context on cards", () => {
@@ -111,5 +134,14 @@ describe("group management UI", () => {
     expect(board).toContain("formatExpectedShootTime");
     expect(board).toContain("预计拍摄");
     expect(board).toContain("shoot-plan-tags");
+  });
+
+  it("requires a shoot intention when AI generation is enabled", () => {
+    const dialog = readFileSync("components/CreateSessionDialog.tsx", "utf8");
+
+    expect(dialog).toContain("aiDescriptionMissing");
+    expect(dialog).toContain("请先填写拍摄意图");
+    expect(dialog).toContain("required={useAi}");
+    expect(dialog).toContain("创建并生成拍摄前规划");
   });
 });

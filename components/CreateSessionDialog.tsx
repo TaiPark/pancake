@@ -26,10 +26,16 @@ export function CreateSessionDialog({ groupId, skills, hasLlmConfig }: CreateSes
   const [useAi, setUseAi] = useState(hasLlmConfig);
   const [error, setError] = useState("");
   const [pending, startTransition] = useTransition();
+  const aiDescriptionMissing = useAi && description.trim().length === 0;
 
   function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
+
+    if (aiDescriptionMissing) {
+      setError("请先填写拍摄意图，再使用 AI 生成规划。");
+      return;
+    }
 
     const formData = new FormData(event.currentTarget);
     formData.set("description", description);
@@ -92,14 +98,21 @@ export function CreateSessionDialog({ groupId, skills, hasLlmConfig }: CreateSes
             <label className="grid gap-2 text-sm">
               拍摄意图描述
               <textarea
+                aria-describedby={useAi ? "shoot-description-help" : undefined}
                 className="field min-h-40 resize-y"
                 maxLength={2000}
                 name="description"
                 onChange={(event) => setDescription(event.target.value)}
                 placeholder="描述主题、风格、地点、成员、交付目标和你已经确定的限制..."
+                required={useAi}
                 value={description}
               />
-              <span className="justify-self-end font-mono text-xs text-[var(--muted)]">{description.length}/2000</span>
+              <span className="flex items-start justify-between gap-3 text-xs" id="shoot-description-help">
+                <span className={aiDescriptionMissing ? "text-amber-100" : "text-[var(--muted)]"}>
+                  {useAi ? "启用 AI 时需要填写拍摄意图。" : "手动创建时可以稍后补充。"}
+                </span>
+                <span className="shrink-0 font-mono text-[var(--muted)]">{description.length}/2000</span>
+              </span>
             </label>
 
             {hasLlmConfig ? (
@@ -144,11 +157,11 @@ export function CreateSessionDialog({ groupId, skills, hasLlmConfig }: CreateSes
             <div className="flex flex-col gap-3 pt-2 sm:flex-row">
               <PendingButton
                 className="button button-primary flex-1"
-                disabled={pending || !title.trim()}
+                disabled={pending || !title.trim() || aiDescriptionMissing}
                 pending={pending}
                 pendingText={useAi ? "正在创建并生成..." : "正在创建..."}
               >
-                {useAi ? "创建并 AI 生成" : "创建拍摄计划"}
+                {useAi ? "创建并生成拍摄前规划" : "创建拍摄计划"}
               </PendingButton>
               <button className="button button-secondary" disabled={pending} onClick={() => setOpen(false)} type="button">
                 取消

@@ -195,6 +195,16 @@ export function canMoveSessionStage(from: SessionStage, to: SessionStage): boole
   return fromIndex !== -1 && toIndex !== -1 && Math.abs(fromIndex - toIndex) === 1;
 }
 
+export function nextSessionStage(stage: SessionStage): SessionStage | null {
+  const next: Record<SessionStage, SessionStage | null> = {
+    SPARK: SessionStage.PLAN,
+    PLAN: SessionStage.FEEDBACK,
+    FEEDBACK: null
+  };
+
+  return next[stage];
+}
+
 export function stageLabel(stage: SessionStage): string {
   const labels: Record<SessionStage, string> = {
     SPARK: "拍摄前",

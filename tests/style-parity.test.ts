@@ -12,17 +12,20 @@ describe("homepage style parity", () => {
     expect(signup).toContain("auth-proof-card");
   });
 
-  it("uses the same glow shell for app page hero panels", () => {
+  it("keeps glow emphasis limited to compact app headers", () => {
     const groups = readFileSync("app/app/groups/page.tsx", "utf8");
     const group = readFileSync("app/app/groups/[groupId]/page.tsx", "utf8");
     const session = readFileSync("app/app/groups/[groupId]/sessions/[sessionId]/page.tsx", "utf8");
 
     expect(groups).toContain("BorderGlow");
-    expect(group).toContain("BorderGlow");
-    expect(session).toContain("BorderGlow");
     expect(groups).toContain("studio-metric");
-    expect(group).toContain("studio-metric");
+    expect(group).not.toContain("BorderGlow");
+    expect(session).toContain("BorderGlow");
     expect(session).toContain("studio-metric");
+    expect(group).toContain('className="panel reveal');
+    expect(session).not.toContain('lg:grid-cols-[1fr_0.9fr]');
+    expect(group).toContain("继续正在进行的拍摄");
+    expect(session).toContain("当前阶段");
   });
 
   it("softens app surfaces to match the homepage material system", () => {

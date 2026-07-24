@@ -26,11 +26,10 @@ type Skill = {
 type GroupSettingsDialogProps = {
   groupId: string;
   existingConfig: LlmConfig;
-  isOwner: boolean;
   skills: Skill[];
 };
 
-export function GroupSettingsDialog({ groupId, existingConfig, isOwner, skills }: GroupSettingsDialogProps) {
+export function GroupSettingsDialog({ groupId, existingConfig, skills }: GroupSettingsDialogProps) {
   const [open, setOpen] = useState(false);
 
   const dialog =
@@ -58,8 +57,8 @@ export function GroupSettingsDialog({ groupId, existingConfig, isOwner, skills }
           ) : null}
 
           <div className="grid gap-4">
-            <LlmConfigPanel existingConfig={existingConfig} groupId={groupId} isOwner={isOwner} />
-            <SkillManager groupId={groupId} isOwner={isOwner} skills={skills} />
+            <LlmConfigPanel existingConfig={existingConfig} groupId={groupId} isOwner={true} />
+            <SkillManager groupId={groupId} isOwner={true} skills={skills} />
           </div>
         </div>
       </div>

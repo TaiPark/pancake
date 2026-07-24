@@ -8,7 +8,15 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { auth, signIn, signOut } from "@/lib/auth";
-import { canMoveSessionStage, defaultPlanMarkdown, defaultSparkFields, mergeSparkFields, parseSparkFields } from "@/lib/domain";
+import {
+  canMoveSessionStage,
+  defaultPlanMarkdown,
+  defaultSparkFields,
+  mergeSparkFields,
+  nextSessionStage,
+  parseSparkFields,
+  stageLabel
+} from "@/lib/domain";
 import { validateRegistrationInvite } from "@/lib/invite";
 import { callLlm, generateSparkFields } from "@/lib/llm";
 import { prisma } from "@/lib/prisma";
@@ -44,13 +52,23 @@ const skillSchema = z.object({
   isDefault: z.boolean()
 });
 
-const createSessionWithAiSchema = z.object({
-  title: z.string().min(1, "标题不能为空").max(100, "标题最多 100 个字符"),
-  description: z.string().max(2000, "描述最多 2000 字"),
-  skillId: z.string(),
-  useAi: z.boolean(),
-  expectedShootAt: z.string().max(40).optional()
-});
+const createSessionWithAiSchema = z
+  .object({
+    title: z.string().min(1, "标题不能为空").max(100, "标题最多 100 个字符"),
+    description: z.string().max(2000, "描述最多 2000 字"),
+    skillId: z.string(),
+    useAi: z.boolean(),
+    expectedShootAt: z.string().max(40).optional()
+  })
+  .superRefine((data, context) => {
+    if (data.useAi && data.description.trim().length === 0) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["description"],
+        message: "使用 AI 时请填写拍摄意图"
+      });
+    }
+  });
 
 type ActionState = { ok?: boolean; error?: string; message?: string };
 
@@ -534,7 +552,8 @@ export async function regenerateSparkFieldsAction(sessionId: string): Promise<Ac
       id: true,
       groupId: true,
       description: true,
-      skillId: true
+      skillId: true,
+      updatedAt: true
     }
   });
   if (!session) {
@@ -584,8 +603,8 @@ export async function regenerateSparkFieldsAction(sessionId: string): Promise<Ac
       fieldHints
     );
 
-    await prisma.session.update({
-      where: { id: sessionId },
+    const updateResult = await prisma.session.updateMany({
+      where: { id: sessionId, updatedAt: session.updatedAt },
       data: {
         sparkFields: result.sparkFields,
         aiGenerated: true,
@@ -593,6 +612,9 @@ export async function regenerateSparkFieldsAction(sessionId: string): Promise<Ac
         updatedById: userId
       }
     });
+    if (updateResult.count === 0) {
+      return { error: "拍摄计划已在生成期间更新，请重试" };
+    }
   } catch (error) {
     return { error: `AI 调用失败: ${error instanceof Error ? error.message : "未知错误"}` };
   }
@@ -601,12 +623,15 @@ export async function regenerateSparkFieldsAction(sessionId: string): Promise<Ac
   return { ok: true, message: "拍摄前内容已重新生成" };
 }
 
-export async function deleteSessionAction(sessionId: string) {
+export async function deleteSessionAction(sessionId: string): Promise<ActionState> {
   const userId = await currentUserId();
-  const session = await prisma.session.findUniqueOrThrow({
+  const session = await prisma.session.findUnique({
     where: { id: sessionId },
     select: { groupId: true }
   });
+  if (!session) {
+    return { error: "拍摄计划不存在" };
+  }
 
   await requireGroupMember(userId, session.groupId);
 
@@ -615,6 +640,7 @@ export async function deleteSessionAction(sessionId: string) {
   });
 
   revalidatePath(`/app/groups/${session.groupId}`);
+  return { ok: true, message: "拍摄计划已删除" };
 }
 
 export async function updateSessionStageAction(sessionId: string, targetStage: SessionStage) {
@@ -642,25 +668,50 @@ export async function updateSessionStageAction(sessionId: string, targetStage: S
   revalidatePath(`/app/groups/${session.groupId}/sessions/${sessionId}`);
 }
 
-export async function updateSparkAction(sessionId: string, formData: FormData) {
+export async function saveWorkflowStageAction(
+  sessionId: string,
+  _state: ActionState | null,
+  formData: FormData
+): Promise<ActionState> {
   const userId = await currentUserId();
   const session = await prisma.session.findUniqueOrThrow({
     where: { id: sessionId },
-    select: { groupId: true, sparkFields: true }
+    select: { groupId: true, stage: true, sparkFields: true, updatedAt: true }
   });
 
   await requireGroupMember(userId, session.groupId);
-  const nextSparkFields = mergeSparkFields(parseSparkFields(session.sparkFields), formData);
 
-  await prisma.session.update({
-    where: { id: sessionId },
+  const nextSparkFields = mergeSparkFields(parseSparkFields(session.sparkFields), formData);
+  const wantsAdvance = formData.get("intent") === "advance";
+  const targetStage = wantsAdvance ? nextSessionStage(session.stage) : session.stage;
+
+  if (!targetStage || (wantsAdvance && !canMoveSessionStage(session.stage, targetStage))) {
+    return { error: "只能按顺序推进相邻阶段" };
+  }
+
+  const result = await prisma.session.updateMany({
+    where: {
+      id: sessionId,
+      stage: session.stage,
+      updatedAt: session.updatedAt
+    },
     data: {
       sparkFields: nextSparkFields,
+      stage: targetStage,
       updatedById: userId
     }
   });
 
+  if (result.count === 0) {
+    return { error: "拍摄计划已被其他成员更新，请刷新后重试" };
+  }
+
+  revalidatePath(`/app/groups/${session.groupId}`);
   revalidatePath(`/app/groups/${session.groupId}/sessions/${sessionId}`);
+  return {
+    ok: true,
+    message: wantsAdvance && targetStage ? `已保存并进入${stageLabel(targetStage)}` : "当前阶段已保存"
+  };
 }
 
 export async function updatePlanAction(sessionId: string, formData: FormData) {
