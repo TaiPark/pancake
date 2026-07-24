@@ -67,6 +67,21 @@ describe("group management UI", () => {
     expect(settings).toContain("群组设置");
   });
 
+  it("puts active plans before owner-only settings and supports copying the invite code", () => {
+    const source = readFileSync("app/app/groups/[groupId]/page.tsx", "utf8");
+    const settings = readFileSync("components/GroupSettingsDialog.tsx", "utf8");
+    const invite = readFileSync("components/InviteCodeButton.tsx", "utf8");
+
+    expect(source.indexOf("<KanbanBoard")).toBeLessThan(source.indexOf("<GroupSettingsDialog"));
+    expect(source).toContain("InviteCodeButton");
+    expect(source).toContain("isOwner ? (");
+    expect(source).toContain("继续正在进行的拍摄");
+    expect(settings).not.toContain("isOwner: boolean");
+    expect(invite).toContain("navigator.clipboard.writeText");
+    expect(invite).toContain("复制邀请码");
+    expect(invite).toContain("已复制");
+  });
+
   it("communicates default generation-template fallback when no custom template exists", () => {
     const manager = readFileSync("components/SkillManager.tsx", "utf8");
     const createDialog = readFileSync("components/CreateSessionDialog.tsx", "utf8");

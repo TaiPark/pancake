@@ -137,6 +137,17 @@ describe("workflow editor stage experience", () => {
   });
 });
 
+describe("group board stage experience", () => {
+  it("prioritizes continuing active shoots before owner tools", () => {
+    const source = readFileSync("app/app/groups/[groupId]/page.tsx", "utf8");
+
+    expect(source.indexOf("<KanbanBoard")).toBeGreaterThan(-1);
+    expect(source.indexOf("<KanbanBoard")).toBeLessThan(source.indexOf("<GroupSettingsDialog"));
+    expect(source).toContain("继续正在进行的拍摄");
+    expect(source).toContain("isOwner ? (");
+  });
+});
+
 describe("regenerateSparkFieldsAction", () => {
   beforeEach(() => {
     vi.resetAllMocks();
