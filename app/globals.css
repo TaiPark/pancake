@@ -546,6 +546,18 @@ a {
   backdrop-filter: blur(18px);
 }
 
+.kanban-column {
+  order: var(--mobile-order);
+  min-height: 0;
+}
+
+@media (min-width: 1024px) {
+  .kanban-column {
+    order: initial;
+    min-height: 28rem;
+  }
+}
+
 .masonry {
   column-count: 1;
   column-gap: 1rem;

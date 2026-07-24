@@ -9,6 +9,7 @@ const mocks = vi.hoisted(() => ({
   findUnique: vi.fn(),
   findLlmConfig: vi.fn(),
   findLlmSkill: vi.fn(),
+  deleteSession: vi.fn(),
   update: vi.fn(),
   updateMany: vi.fn(),
   generateSparkFields: vi.fn(),
@@ -29,7 +30,8 @@ vi.mock("@/lib/prisma", () => ({
       findUnique: mocks.findUnique,
       findUniqueOrThrow: mocks.findUniqueOrThrow,
       update: mocks.update,
-      updateMany: mocks.updateMany
+      updateMany: mocks.updateMany,
+      delete: mocks.deleteSession
     },
     llmConfig: {
       findUnique: mocks.findLlmConfig
@@ -69,7 +71,7 @@ vi.mock("@/lib/storage", () => ({
   createPhotoUploadUrl: vi.fn()
 }));
 
-import { regenerateSparkFieldsAction, saveWorkflowStageAction } from "@/app/actions";
+import { deleteSessionAction, regenerateSparkFieldsAction, saveWorkflowStageAction } from "@/app/actions";
 
 describe("workflow editor stage experience", () => {
   it("submits save and advance intents with inline action state", () => {
@@ -145,6 +147,34 @@ describe("group board stage experience", () => {
     expect(source.indexOf("<KanbanBoard")).toBeLessThan(source.indexOf("<GroupSettingsDialog"));
     expect(source).toContain("继续正在进行的拍摄");
     expect(source).toContain("isOwner ? (");
+  });
+
+  it("uses protected session deletion and mobile column ordering", () => {
+    const board = readFileSync("components/KanbanBoard.tsx", "utf8");
+    const deleteButton = readFileSync("components/DeleteSessionButton.tsx", "utf8");
+    const css = readFileSync("app/globals.css", "utf8");
+
+    expect(board).toContain("DeleteSessionButton");
+    expect(board).toContain("继续处理");
+    expect(deleteButton).toContain("window.confirm");
+    expect(css).toContain("--mobile-order");
+  });
+});
+
+describe("deleteSessionAction", () => {
+  beforeEach(() => {
+    vi.resetAllMocks();
+    mocks.auth.mockResolvedValue({ user: { id: userId } });
+  });
+
+  it("returns a direct error when the shoot plan no longer exists", async () => {
+    mocks.findUnique.mockResolvedValue(null);
+
+    const result = await deleteSessionAction(sessionId);
+
+    expect(result).toEqual({ error: "拍摄计划不存在" });
+    expect(mocks.requireGroupMember).not.toHaveBeenCalled();
+    expect(mocks.deleteSession).not.toHaveBeenCalled();
   });
 });
 

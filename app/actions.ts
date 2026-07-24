@@ -613,12 +613,15 @@ export async function regenerateSparkFieldsAction(sessionId: string): Promise<Ac
   return { ok: true, message: "拍摄前内容已重新生成" };
 }
 
-export async function deleteSessionAction(sessionId: string) {
+export async function deleteSessionAction(sessionId: string): Promise<ActionState> {
   const userId = await currentUserId();
-  const session = await prisma.session.findUniqueOrThrow({
+  const session = await prisma.session.findUnique({
     where: { id: sessionId },
     select: { groupId: true }
   });
+  if (!session) {
+    return { error: "拍摄计划不存在" };
+  }
 
   await requireGroupMember(userId, session.groupId);
 
@@ -627,6 +630,7 @@ export async function deleteSessionAction(sessionId: string) {
   });
 
   revalidatePath(`/app/groups/${session.groupId}`);
+  return { ok: true, message: "拍摄计划已删除" };
 }
 
 export async function updateSessionStageAction(sessionId: string, targetStage: SessionStage) {

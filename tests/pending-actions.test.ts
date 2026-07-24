@@ -9,6 +9,7 @@ const filesWithWaitingActions = [
   "components/LlmConfigPanel.tsx",
   "components/SkillManager.tsx",
   "components/DeleteGroupButton.tsx",
+  "components/DeleteSessionButton.tsx",
   "components/PhotoMasonry.tsx",
   "components/AppShell.tsx",
   "components/KanbanBoard.tsx",

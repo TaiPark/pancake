@@ -1,7 +1,9 @@
 import Link from "next/link";
-import { ArrowRight, CalendarBlank, Camera, NotePencil, Trash } from "@phosphor-icons/react/dist/ssr";
+import { ArrowRight, CalendarBlank, Camera, NotePencil } from "@phosphor-icons/react/dist/ssr";
 import { SessionStage, type Session } from "@prisma/client";
-import { deleteSessionAction, updateSessionStageAction } from "@/app/actions";
+import type { CSSProperties } from "react";
+import { updateSessionStageAction } from "@/app/actions";
+import { DeleteSessionButton } from "@/components/DeleteSessionButton";
 import { canMoveSessionStage, extractThemeTags, formatExpectedShootTime, parseSparkFields, stageHint, stageLabel } from "@/lib/domain";
 import { PendingButton } from "@/components/PendingButton";
 import { StageBadge } from "@/components/StageBadge";
@@ -18,11 +20,12 @@ export function KanbanBoard({ groupId, sessions }: { groupId: string; sessions: 
     <div className="grid gap-4 lg:grid-cols-3">
       {stages.map((stage, index) => {
         const columnSessions = sessions.filter((session) => session.stage === stage);
+        const mobileOrder = columnSessions.length > 0 ? index : stages.length + index;
         return (
           <section
-            className="panel reveal min-h-[28rem] p-4"
+            className="kanban-column panel reveal p-4"
             key={stage}
-            style={{ animationDelay: `${index * 80}ms` }}
+            style={{ "--mobile-order": mobileOrder, animationDelay: `${index * 80}ms` } as CSSProperties}
           >
             <div className="mb-5 flex items-start justify-between gap-3">
               <div>
@@ -57,17 +60,7 @@ export function KanbanBoard({ groupId, sessions }: { groupId: string; sessions: 
                         {session.aiGenerated ? (
                           <span className="rounded-full border border-[var(--accent)]/30 px-2 py-0.5 text-xs text-[var(--accent-strong)]">AI</span>
                         ) : null}
-                        <form action={deleteSessionAction.bind(null, session.id)}>
-                          <PendingButton
-                            aria-label={`删除 ${session.title}`}
-                            className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-red-300/25 bg-red-950/20 text-red-100/60 transition hover:border-red-200/45 hover:bg-red-900/35 hover:text-red-100 focus-visible:border-red-200/50 focus-visible:text-red-100"
-                            pendingContent={<Trash size={12} aria-hidden="true" />}
-                            pendingText="删除中..."
-                            title="删除"
-                          >
-                            <Trash size={12} aria-hidden="true" />
-                          </PendingButton>
-                        </form>
+                        <DeleteSessionButton sessionId={session.id} sessionTitle={session.title} />
                       </div>
                     </div>
                     <Link href={`/app/groups/${groupId}/sessions/${session.id}`}>
@@ -103,16 +96,16 @@ export function KanbanBoard({ groupId, sessions }: { groupId: string; sessions: 
                     </Link>
 
                     <div className="mt-4 flex flex-wrap gap-2">
-                      <Link className="button button-secondary min-h-9 min-w-0 flex-1 px-2 text-xs" href={`/app/groups/${groupId}/sessions/${session.id}`}>
-                        查看策划详情
+                      <Link className="button button-primary min-h-11 min-w-0 flex-1 px-2 text-xs" href={`/app/groups/${groupId}/sessions/${session.id}`}>
+                        继续处理{stageLabel(session.stage)}任务
                         <ArrowRight size={14} />
                       </Link>
                       {stages
                         .filter((target) => target !== session.stage && canMoveSessionStage(session.stage, target))
                         .map((target) => (
                           <form className="min-w-0 flex-1" action={updateSessionStageAction.bind(null, session.id, target)} key={target}>
-                            <PendingButton className="button button-secondary min-h-9 w-full px-2 text-xs" pendingText={`正在切换到${stageLabel(target)}...`}>
-                              {stageLabel(target)}
+                            <PendingButton className="button button-secondary min-h-11 w-full px-2 text-xs" pendingText={`正在进入${stageLabel(target)}...`}>
+                              进入{stageLabel(target)}
                               <ArrowRight size={14} />
                             </PendingButton>
                           </form>

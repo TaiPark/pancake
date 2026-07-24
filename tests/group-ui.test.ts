@@ -94,21 +94,29 @@ describe("group management UI", () => {
 
   it("keeps session delete actions as icon-only secondary controls", () => {
     const board = readFileSync("components/KanbanBoard.tsx", "utf8");
+    const deleteButton = readFileSync("components/DeleteSessionButton.tsx", "utf8");
 
     expect(board).toContain("session-card-actions");
-    expect(board).toContain("aria-label={`删除 ${session.title}`}");
-    expect(board).toContain("h-6 w-6");
-    expect(board).toContain("pendingContent={<Trash size={12} aria-hidden=\"true\" />}");
+    expect(board).toContain("DeleteSessionButton");
+    expect(deleteButton).toContain("aria-label={`删除 ${sessionTitle}`}");
+    expect(deleteButton).toContain("h-6 w-6");
+    expect(deleteButton).toContain("pendingContent={<Trash size={12} aria-hidden=\"true\" />}");
+    expect(deleteButton).toContain("window.confirm");
+    expect(deleteButton).toContain("确认删除拍摄计划");
     expect(board).not.toContain("button button-danger button-icon");
     expect(board).not.toContain(">删除<");
   });
 
-  it("shows an explicit details entry on shoot-plan cards", () => {
+  it("makes the current-stage task primary and labels stage transitions", () => {
     const board = readFileSync("components/KanbanBoard.tsx", "utf8");
+    const css = readFileSync("app/globals.css", "utf8");
 
-    expect(board).toContain("查看策划详情");
-    expect(board).toContain("button button-secondary");
+    expect(board).toContain("继续处理");
+    expect(board).toContain("进入${stageLabel(target)}");
     expect(board).toContain("ArrowRight");
+    expect(board).toContain("kanban-column");
+    expect(css).toContain("--mobile-order");
+    expect(board).not.toContain("查看策划详情");
   });
 
   it("lets users set expected shoot time and surfaces plan context on cards", () => {
